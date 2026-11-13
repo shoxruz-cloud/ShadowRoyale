@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Xotira o'yini</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: var(--tg-theme-bg-color, #ffffff);
+    --text: var(--tg-theme-text-color, #111111);
+    --btn: var(--tg-theme-button-color, #2481cc);
+    --btn-text: var(--tg-theme-button-text-color, #ffffff);
+    --card: var(--tg-theme-secondary-bg-color, #eef1f5);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text);
+         font-family: system-ui, sans-serif; text-align: center; }
+  h1 { font-size: 22px; margin: 4px 0 12px; }
+  .info { display: flex; justify-content: space-around; margin-bottom: 14px; font-size: 15px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+          max-width: 400px; margin: 0 auto; }
+  .card { aspect-ratio: 1; border: 0; border-radius: 14px; font-size: 34px;
+          background: var(--btn); color: var(--btn-text); cursor: pointer; }
+  .card.open, .card.done { background: var(--card); color: var(--text); }
+  .card.done { opacity: .55; }
+  #restart { margin-top: 18px; padding: 12px 28px; border: 0; border-radius: 12px;
+             background: var(--btn); color: var(--btn-text); font-size: 16px; }
+  #msg { margin-top: 14px; font-size: 18px; min-height: 26px; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>🧠 Xotira o'yini</h1>
+<div class="info">
+  <div>Yurish: <b id="moves">0</b></div>
+  <div>Vaqt: <b id="time">0</b>s</div>
+  <div>Rekord: <b id="best">-</b></div>
+</div>
+<div class="grid" id="grid"></div>
+<div id="msg"></div>
+<button id="restart">🔁 Qaytadan</button>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready(); tg.expand();
+
+const EMOJIS = ["🍎","🚀","🐱","⚽","🎸","🍕","🌟","🐼"];
+const grid = document.getElementById("grid");
+const $ = id => document.getElementById(id);
+let first = null, lock = false, moves = 0, found = 0, sec = 0, timer = null;
+
+function getBest() { try { return +localStorage.getItem("best") || 0; } catch { return 0; } }
+function setBest(v) { try { localStorage.setItem("best", v); } catch {} }
+function showBest() { $("best").textContent = getBest() || "-"; }
+
+function start() {
+  clearInterval(timer);
+  moves = 0; found = 0; sec = 0; first = null; lock = false;
+  $("moves").textContent = 0; $("time").textContent = 0; $("msg").textContent = "";
+  showBest();
+  const deck = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
+  grid.innerHTML = "";
+  deck.forEach(e => {
+    const b = document.createElement("button");
+    b.className = "card"; b.dataset.e = e; b.textContent = "?";
+    b.onclick = () => flip(b);
+    grid.appendChild(b);
+  });
+  timer = setInterval(() => $("time").textContent = ++sec, 1000);
+}
+
+function flip(c) {
+  if (lock || c.classList.contains("open") || c.classList.contains("done")) return;
+  c.classList.add("open"); c.textContent = c.dataset.e;
+  if (!first) { first = c; return; }
+
+  moves++; $("moves").textContent = moves;
+  if (first.dataset.e === c.dataset.e) {
+    first.className = c.className = "card done";
+    first = null; found++;
+    if (found === EMOJIS.length) win();
+  } else {
+    lock = true;
+    const a = first; first = null;
+    setTimeout(() => {
+      a.className = c.className = "card"; a.textContent = c.textContent = "?";
+      lock = false;
+    }, 700);
+  }
+}
+
+function win() {
+  clearInterval(timer);
+  const best = getBest();
+  if (!best || moves < best) { setBest(moves); $("msg").textContent = `🏆 Yangi rekord! ${moves} yurish`; }
+  else $("msg").textContent = `🎉 Yutdingiz! ${moves} yurish, ${sec}s`;
+  showBest();
+}
+
+$("restart").onclick = start;
+start();
+</script>
+</body>
+</html>
