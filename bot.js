@@ -13,7 +13,7 @@ if (!BOT_TOKEN || !WEBAPP_URL) {
 const app = express();
 app.use(express.static("public"));
 app.get("/health", (_, res) => res.send("ok"));
-app.listen(PORT, () => console.log("Server port:", PORT));
+app.listen(PORT, "0.0.0.0", () => console.log("Server port:", PORT));
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
