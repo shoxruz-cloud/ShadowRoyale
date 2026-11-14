@@ -2,9 +2,9 @@
   "name": "shadow-royale",
   "version": "2.0.0",
   "private": true,
-  "main": "server.js",
+  "main": "bot.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node bot.js"
   },
   "dependencies": {
     "dotenv": "^18.0.10",
