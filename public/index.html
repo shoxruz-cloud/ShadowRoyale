@@ -58,6 +58,25 @@ canvas+.row{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;mar
 .hdr{max-width:720px}
 #menu h1{font-size:22px}
 }
+#menu{inset:0;max-width:none;border-radius:0;padding:0;background:#3b6ee0;backdrop-filter:none;-webkit-backdrop-filter:none;display:block;overflow:hidden;z-index:6}
+#mc{position:absolute;inset:0;width:100%;height:100%}
+.mtop{position:absolute;top:10px;left:12px;z-index:2}
+.mw{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:46%;min-width:300px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2}
+.logo{font:900 italic 46px/.95 Impact,'Arial Black',sans-serif;color:#fff;-webkit-text-stroke:3px #000;paint-order:stroke fill;text-shadow:0 5px 0 #000;text-align:center;letter-spacing:2px}
+.logo span{color:#ff4a3a}
+.lsub{color:#000;font-weight:800;letter-spacing:5px;font-size:11px}
+.play{width:70%;font:900 32px Impact,'Arial Black',sans-serif;color:#fff;background:linear-gradient(#ff5a4a,#c9201a);border:3px solid #5a0c08;border-radius:14px;box-shadow:inset 0 -6px 0 rgba(0,0,0,.28),0 4px 0 #3a0605;text-shadow:0 3px 0 #700;padding:8px}
+.mrow{display:flex;gap:6px;width:100%}
+.mb{flex:1;font:900 11px Impact,'Arial Black',sans-serif;color:#fff;border:2px solid rgba(0,0,0,.7);border-radius:8px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.28);text-shadow:0 2px 0 rgba(0,0,0,.6);padding:8px 2px;line-height:1.2}
+.mb small{display:block;font:700 9px system-ui}
+.mb.o{background:linear-gradient(#ff9a3c,#d9611a)}
+.mb.y{background:linear-gradient(#ffe14a,#d1a413)}
+.mb.g{background:linear-gradient(#4cd964,#1f9a35)}
+.mb.p{background:linear-gradient(#c04cf0,#7a1fb5)}
+.mcir{position:absolute;right:14px;bottom:12px;display:flex;gap:10px;z-index:2}
+.cir{width:54px;height:54px;border-radius:50%;background:rgba(10,30,20,.85);font-size:24px;padding:0;position:relative}
+.cir small{position:absolute;right:-2px;top:-2px;background:#e0492f;border-radius:10px;font-size:10px;padding:1px 5px}
+@media (orientation:portrait){.mw{right:50%;transform:translate(50%,-50%);width:92%;top:40%}}
 </style>
 </head>
 <body>
@@ -80,23 +99,32 @@ canvas+.row{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;mar
 
   <div class="ov hide" id="rot" style="z-index:9;background:#0f1117"><div style="font-size:60px">📱↻</div><h2>Telefonni yonbosh qiling</h2><p class="sub">Shadow Royale yonboshdan o'ynaladi. Agar aylanmasa, telefoningizda "Avto-aylantirish"ni yoqing.</p></div>
   <div class="ov" id="menu">
-    <div class="glass hdr"><div><b id="uname">Jangchi</b><br><span class="mut" id="rank"></span></div><div class="pill" id="stats"></div></div>
-    <h1>SHADOW ROYALE</h1>
-    <button id="resume" class="wide sec" style="display:none">▶ Davom etish</button>
-    <div class="tiles">
-      <button id="camp" class="tile big"><b>⚔</b>Kampaniya<small id="campsub"></small></button>
-      <button id="endl" class="tile"><b>♾</b>Cheksiz rejim<small id="bestsub"></small></button>
-      <button id="shop" class="tile"><b>🏪</b>Do'kon<small>Kuchaytirish</small></button>
-      <button id="ach" class="tile"><b>🏅</b>Yutuqlar<small id="achsub"></small></button>
-      <button id="gift" class="tile"><b>🎁</b>Kunlik sovg'a<small id="giftsub"></small></button>
-      <button id="how" class="tile"><b>📖</b>Qo'llanma<small>Qanday o'ynaladi</small></button>
-      <button id="setb" class="tile"><b>⚙</b>Sozlamalar<small>Vibratsiya, reset</small></button>
+    <canvas id="mc"></canvas>
+    <div class="mtop"><div class="pill"><b id="uname">Jangchi</b> · <span id="rank"></span> · <span id="stats"></span></div></div>
+    <div class="mw">
+      <div class="logo">SHADOW<br><span>ROYALE</span></div>
+      <div class="lsub">J A N G &nbsp; M A Y D O N I</div>
+      <button id="camp" class="play">O'YNASH</button>
+      <div class="lsub" id="campsub" style="letter-spacing:1px"></div>
+      <div class="mrow">
+        <button id="gift" class="mb o">🎁 SOVG'A<small id="giftsub"></small></button>
+        <button id="how" class="mb y">📖 QO'LLANMA</button>
+        <button id="endl" class="mb g">♾ CHEKSIZ<small id="bestsub"></small></button>
+        <button id="shop" class="mb p">🏪 DO'KON</button>
+      </div>
+      <button id="resume" class="mb y" style="display:none;flex:none;width:60%;font-size:14px">▶ DAVOM ETISH</button>
+    </div>
+    <div class="mcir">
+      <button id="ach" class="cir">🏆<small id="achsub"></small></button>
+      <button id="musc" class="cir">🔊</button>
+      <button id="setb" class="cir">⚙</button>
     </div>
   </div>
+
   <div class="ov hide" id="levels"><h2>⚔ Kampaniya</h2><div class="grid" id="lvgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
   <div class="ov hide" id="shopv"><h2>🏪 Do'kon</h2><div class="pill">🪙 Tangalar: <b id="coins"></b></div><div class="grid" id="shgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
   <div class="ov hide" id="achv"><h2>🏅 Yutuqlar</h2><div class="pill" id="achstat"></div><div class="grid" id="achgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
-  <div class="ov hide" id="setv"><h2>⚙ Sozlamalar</h2><button id="vibb" class="sec"></button><button id="resetb" class="sec"></button><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
+  <div class="ov hide" id="setv"><h2>⚙ Sozlamalar</h2><button id="vibb" class="sec"></button><button id="musb" class="sec"></button><button id="resetb" class="sec"></button><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
   <div class="ov hide" id="howto">
     <h2>📖 Qo'llanma</h2>
     <p class="sub">👆 Jang maydonini <b>barmoq bilan suring</b>. 🎯 tugmasi armiyangizga qaytaradi.<br><br>⛏ Konchilar oltin konigacha yurib, haykalga olib keladi.<br>⚔ Qilich, 🏹 kamon, 🛡 nayza, 🗿 gigant navbat bilan tayyorlanadi.<br><br>🏰 <b>Himoya</b>: haykal yonida turadi<br>🛡 <b>Oldinda</b>: maydon o'rtasida kutadi<br>⚔ <b>Hujum</b>: dushman haykaliga yuradi<br><br>Dushman haykalini yo'q qiling!</p>
@@ -139,7 +167,7 @@ const UP = [
   { k: "st",   n: "🗿 Haykal HP",     d: "+200 HP" },
   { k: "gold", n: "💰 Boshlang'ich oltin", d: "+50 oltin" }
 ];
-const DEF = { coins: 0, inc: 0, dmg: 0, hp: 0, st: 0, gold: 0, prog: 1, wins: 0, kills: 0, best: 0, daily: "", vib: 1 };
+const DEF = { coins: 0, inc: 0, dmg: 0, hp: 0, st: 0, gold: 0, prog: 1, wins: 0, kills: 0, best: 0, daily: "", vib: 1, mus: 1 };
 let D = load(), S = null, screen = "menu", lvl = 0, last = 0, clock = 0, drag = null, resetArm = false;
 
 function load() { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem("sr") || "{}")); } catch { return { ...DEF }; } }
@@ -448,9 +476,112 @@ function renderAch() {
   });
 }
 function renderSet() {
+  syncMus();
   $("vibb").textContent = "📳 Vibratsiya: " + (D.vib ? "yoqiq" : "o'chiq");
   $("resetb").textContent = resetArm ? "⚠ Yana bosing: hammasi o'chadi" : "🗑 Progressni o'chirish";
 }
+/*MUSIC*/
+let AC = null, MG = null, nextT = 0, stp = 0;
+const CH = [[220, 261.6, 329.6], [174.6, 220, 261.6], [261.6, 329.6, 392], [196, 246.9, 293.7]];
+const BS = [55, 43.65, 65.41, 49], AP = [0, 1, 2, 1, 0, 1, 2, 1];
+function tone(fr, t, d, type, v) {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.value = fr;
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+  o.connect(g); g.connect(MG); o.start(t); o.stop(t + d);
+}
+function kick(t) {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(40, t + .15);
+  g.gain.setValueAtTime(.9, t); g.gain.exponentialRampToValueAtTime(.001, t + .2);
+  o.connect(g); g.connect(MG); o.start(t); o.stop(t + .25);
+}
+function sched() {
+  if (!AC || !D.mus || AC.state !== "running") return;
+  while (nextT < AC.currentTime + .4) {
+    const bar = Math.floor(stp / 8) % 4, i = stp % 8;
+    tone(CH[bar][AP[i]] * 2, nextT, .3, "triangle", .18);
+    if (i % 4 === 0) { tone(BS[bar], nextT, .5, "sawtooth", .2); kick(nextT); }
+    nextT += .24; stp++;
+  }
+}
+function startMusic() {
+  if (!D.mus) return;
+  try {
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      MG = AC.createGain(); MG.gain.value = .3; MG.connect(AC.destination);
+      setInterval(sched, 100);
+    }
+    if (AC.state === "suspended") AC.resume();
+    if (nextT < AC.currentTime) nextT = AC.currentTime + .1;
+  } catch {}
+}
+function syncMus() {
+  $("musc").textContent = D.mus ? "🔊" : "🔇";
+  $("musb").textContent = "🎵 Musiqa: " + (D.mus ? "yoqiq" : "o'chiq");
+}
+/*END*/
+
+const mc = $("mc"), mx = mc.getContext("2d");
+function hero(cx, by, s, k, t) {
+  const b = Math.sin(t * 2 + k) * 5 * s, hy = by - 370 * s + b, c = k ? "#1b1030" : "#14141b";
+  mx.save(); mx.lineCap = "round"; mx.lineJoin = "round"; mx.strokeStyle = c; mx.fillStyle = c;
+  mx.lineWidth = 50 * s; mx.beginPath();
+  mx.moveTo(cx - 30 * s, by); mx.lineTo(cx - 20 * s, by - 150 * s);
+  mx.moveTo(cx + 40 * s, by); mx.lineTo(cx + 25 * s, by - 150 * s); mx.stroke();
+  mx.lineWidth = 90 * s; mx.beginPath(); mx.moveTo(cx, by - 170 * s + b); mx.lineTo(cx, by - 270 * s + b); mx.stroke();
+  mx.lineWidth = 36 * s; mx.beginPath(); mx.moveTo(cx + 30 * s, by - 280 * s + b); mx.lineTo(cx + 110 * s, by - 220 * s + b); mx.stroke();
+  mx.beginPath(); mx.arc(cx, hy, 62 * s, 0, 7); mx.fill();
+  if (k === 0) {
+    mx.fillStyle = "#555766"; mx.beginPath(); mx.arc(cx, hy, 66 * s, Math.PI, 0); mx.fill();
+    mx.strokeStyle = "#cfd2dc"; mx.lineWidth = 14 * s; mx.beginPath();
+    mx.moveTo(cx - 60 * s, hy - 20 * s); mx.quadraticCurveTo(cx - 110 * s, hy - 60 * s, cx - 90 * s, hy - 130 * s);
+    mx.moveTo(cx + 60 * s, hy - 20 * s); mx.quadraticCurveTo(cx + 110 * s, hy - 60 * s, cx + 90 * s, hy - 130 * s); mx.stroke();
+    mx.strokeStyle = "#7a4a22"; mx.lineWidth = 12 * s; mx.beginPath();
+    mx.moveTo(cx + 110 * s, by - 100 * s); mx.lineTo(cx + 110 * s, by - 420 * s + b); mx.stroke();
+    mx.fillStyle = "#b9bfd0"; mx.beginPath(); mx.moveTo(cx + 110 * s, by - 420 * s + b);
+    mx.quadraticCurveTo(cx + 190 * s, by - 430 * s + b, cx + 180 * s, by - 340 * s + b);
+    mx.lineTo(cx + 110 * s, by - 360 * s + b); mx.fill();
+  } else {
+    mx.fillStyle = "#3a1f6e"; mx.beginPath(); mx.moveTo(cx - 85 * s, hy + 45 * s);
+    mx.quadraticCurveTo(cx - 60 * s, hy - 115 * s, cx, hy - 115 * s);
+    mx.quadraticCurveTo(cx + 60 * s, hy - 115 * s, cx + 85 * s, hy + 45 * s); mx.fill();
+    mx.fillStyle = "#0a0614"; mx.beginPath(); mx.arc(cx, hy + 5 * s, 52 * s, 0, 7); mx.fill();
+    mx.strokeStyle = "#8a6a3a"; mx.lineWidth = 10 * s; mx.beginPath();
+    mx.moveTo(cx + 110 * s, by - 60 * s); mx.lineTo(cx + 110 * s, by - 450 * s + b); mx.stroke();
+    mx.strokeStyle = "#dfe6ff"; mx.lineWidth = 12 * s; mx.beginPath();
+    mx.moveTo(cx + 110 * s, by - 450 * s + b); mx.quadraticCurveTo(cx + 30 * s, by - 510 * s + b, cx - 30 * s, by - 430 * s + b); mx.stroke();
+  }
+  mx.shadowBlur = 20 * s; mx.shadowColor = k ? "#3ff" : "#c6f"; mx.fillStyle = k ? "#8ff" : "#e9b0ff";
+  [-1, 1].forEach(d => { mx.beginPath(); mx.ellipse(cx + d * 28 * s, hy - 4 * s, 20 * s, 8 * s, d * -.4, 0, 7); mx.fill(); });
+  mx.restore();
+}
+function drawMenu() {
+  const w = mc.clientWidth, h = mc.clientHeight, t = clock;
+  if (!w || !h) return;
+  if (mc.width !== w || mc.height !== h) { mc.width = w; mc.height = h; }
+  const hz = h * .64, land = w > h;
+  let g = mx.createLinearGradient(0, 0, 0, hz);
+  g.addColorStop(0, "#2a5ad6"); g.addColorStop(.7, "#6e72cc"); g.addColorStop(1, "#d08fa0");
+  mx.fillStyle = g; mx.fillRect(0, 0, w, hz + 2);
+  mx.fillStyle = "rgba(255,255,255,.85)";
+  for (let i = 0; i < 6; i++) {
+    const cx = ((t * (10 + i * 3) + i * w / 5) % (w + 240)) - 120, cy = h * (.08 + (i % 3) * .1), r = h * (.035 + (i % 2) * .015);
+    mx.beginPath(); mx.arc(cx, cy, r, 0, 7); mx.arc(cx + r * 1.3, cy + r * .2, r * .8, 0, 7); mx.arc(cx - r * 1.2, cy + r * .3, r * .7, 0, 7); mx.fill();
+  }
+  mx.fillStyle = "#3a2f7a"; mx.beginPath(); mx.moveTo(0, hz);
+  for (let x = 0; x <= w + 20; x += 20) mx.lineTo(x, hz - h * .07 - Math.abs(Math.sin(x / w * 6)) * h * .08);
+  mx.lineTo(w, hz); mx.fill();
+  g = mx.createLinearGradient(0, hz, 0, h); g.addColorStop(0, "#4fae3a"); g.addColorStop(1, "#1f6a24");
+  mx.fillStyle = g; mx.fillRect(0, hz, w, h - hz);
+  mx.strokeStyle = "#3f9a2e"; mx.lineWidth = 3;
+  for (let x = 0; x < w; x += 9) { mx.beginPath(); mx.moveTo(x, hz + 4); mx.lineTo(x + Math.sin(t * 2.2 + x * .3) * 4, hz - 9); mx.stroke(); }
+  const s = land ? h / 520 : Math.min(w / 800, h / 1100), by = h * 1.0;
+  hero(w * (land ? .15 : .22), by, s, 0, t);
+  hero(w * (land ? .34 : .56), by, s * .92, 1, t);
+}
+
 function renderLevels() {
   $("lvgrid").innerHTML = "";
   LV.slice(0, 5).forEach((l, i) => {
@@ -474,6 +605,13 @@ function renderShop() {
 }
 
 $("camp").onclick = () => show("levels");
+$("musc").onclick = $("musb").onclick = () => { D.mus = D.mus ? 0 : 1; save(); syncMus(); if (D.mus) startMusic(); };
+document.addEventListener("pointerdown", startMusic);
+document.addEventListener("visibilitychange", () => {
+  if (!AC) return;
+  if (document.hidden) AC.suspend(); else if (D.mus) AC.resume();
+});
+syncMus();
 $("endl").onclick = () => play(5);
 $("shop").onclick = () => show("shop");
 $("ach").onclick = () => show("ach");
@@ -525,6 +663,7 @@ function loop(t) {
     [0, 1, 2].forEach(i => $("s" + i).className = "m" + (S.stance === i ? " on" : ""));
   }
   draw();
+  if (!$("menu").classList.contains("hide")) drawMenu();
   requestAnimationFrame(loop);
 }
 show("menu");
