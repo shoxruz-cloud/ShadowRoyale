@@ -2,103 +2,398 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Xotira o'yini</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Shadow Royale</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  :root {
-    --bg: var(--tg-theme-bg-color, #ffffff);
-    --text: var(--tg-theme-text-color, #111111);
-    --btn: var(--tg-theme-button-color, #2481cc);
-    --btn-text: var(--tg-theme-button-text-color, #ffffff);
-    --card: var(--tg-theme-secondary-bg-color, #eef1f5);
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text);
-         font-family: system-ui, sans-serif; text-align: center; }
-  h1 { font-size: 22px; margin: 4px 0 12px; }
-  .info { display: flex; justify-content: space-around; margin-bottom: 14px; font-size: 15px; }
-  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-          max-width: 400px; margin: 0 auto; }
-  .card { aspect-ratio: 1; border: 0; border-radius: 14px; font-size: 34px;
-          background: var(--btn); color: var(--btn-text); cursor: pointer; }
-  .card.open, .card.done { background: var(--card); color: var(--text); }
-  .card.done { opacity: .55; }
-  #restart { margin-top: 18px; padding: 12px 28px; border: 0; border-radius: 12px;
-             background: var(--btn); color: var(--btn-text); font-size: 16px; }
-  #msg { margin-top: 14px; font-size: 18px; min-height: 26px; font-weight: 600; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;background:#0f1117;color:#fff;font-family:system-ui,sans-serif}
+#app{position:relative;max-width:820px;margin:0 auto;padding:8px}
+canvas{width:100%;display:block;border-radius:12px;background:#cfe8ff}
+.bar{display:flex;justify-content:space-between;align-items:center;margin:2px 2px 8px;font-weight:700;font-size:15px}
+.row{display:flex;gap:6px;margin-top:6px}
+button{font:inherit;border:0;border-radius:12px;color:#fff;background:#3b6df0;padding:10px 6px}
+button:active{transform:scale(.96)}
+button:disabled{opacity:.35}
+.u{flex:1;font-size:12px;line-height:1.25;background:#26304a;border:1px solid #3b4a75}
+.u b{display:block;font-size:20px}
+.m{flex:1;font-size:14px;background:#4a2a2a}
+.sec{background:#2a2f3d}
+.ov{position:absolute;inset:8px;border-radius:12px;background:rgba(10,12,18,.62);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px;overflow:auto}
+.ov.hide{display:none}
+.ov.solid{background:rgba(10,12,18,.96)}
+h1{margin:0;font-size:36px;letter-spacing:3px;background:linear-gradient(#fff,#f3b53a 60%,#d9402b);-webkit-background-clip:text;color:transparent}
+h2{margin:0;font-size:24px}
+.sub{color:#c8cdd8;font-size:14px;margin:0;max-width:430px;line-height:1.5}
+.ov>button{width:250px;font-size:17px;padding:13px}
+.big{background:linear-gradient(#e8613f,#b92f1c)}
+.grid{display:grid;gap:8px;width:100%;max-width:420px}
+.card{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#1b2030;border:1px solid #333b55;border-radius:12px;padding:10px;text-align:left;font-size:14px}
+.card button{padding:8px 12px;font-size:14px;white-space:nowrap}
+.pill{background:#1b2030;border:1px solid #333b55;border-radius:20px;padding:5px 12px;font-size:14px}
 </style>
 </head>
 <body>
-<h1>🧠 Xotira o'yini</h1>
-<div class="info">
-  <div>Yurish: <b id="moves">0</b></div>
-  <div>Vaqt: <b id="time">0</b>s</div>
-  <div>Rekord: <b id="best">-</b></div>
+<div id="app">
+  <div class="bar"><span>💰 <b id="gold">0</b></span><span id="info"></span><button id="pause" class="sec" style="padding:5px 14px">☰</button></div>
+  <canvas id="c" width="800" height="400"></canvas>
+  <div class="row">
+    <button class="u" id="bm"><b>⛏</b>Konchi 150</button>
+    <button class="u" id="bs"><b>⚔</b>Qilich 125</button>
+    <button class="u" id="ba"><b>🏹</b>Kamon 300</button>
+    <button class="u" id="bp"><b>🛡</b>Nayza 250</button>
+    <button class="u" id="bg"><b>🗿</b>Gigant 800</button>
+  </div>
+  <div class="row">
+    <button class="m" id="bmode">🛡 Mudofaa</button>
+    <button class="m" id="brain">🌧 Yomg'ir</button>
+  </div>
+
+  <div class="ov" id="menu">
+    <h1>SHADOW<br>ROYALE</h1>
+    <p class="sub">Haykalingizni himoya qiling, dushmanni yo'q qiling!</p>
+    <div class="pill" id="stats"></div>
+    <button id="resume" class="sec" style="display:none">▶ Davom etish</button>
+    <button id="camp" class="big">⚔ Kampaniya</button>
+    <button id="shop" class="sec">🏪 Do'kon</button>
+    <button id="how" class="sec">📖 Qo'llanma</button>
+  </div>
+
+  <div class="ov solid hide" id="levels">
+    <h2>⚔ Kampaniya</h2>
+    <div class="grid" id="lvgrid"></div>
+    <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
+  </div>
+
+  <div class="ov solid hide" id="shopv">
+    <h2>🏪 Do'kon</h2>
+    <div class="pill">🪙 Tangalar: <b id="coins"></b></div>
+    <div class="grid" id="shgrid"></div>
+    <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
+  </div>
+
+  <div class="ov solid hide" id="howto">
+    <h2>📖 Qo'llanma</h2>
+    <p class="sub">⛏ <b>Konchi</b>: oltin qazadi<br>⚔ <b>Qilich</b>: arzon jangchi<br>🏹 <b>Kamon</b>: uzoqdan otadi<br>🛡 <b>Nayza</b>: qalqonli, bardoshli<br>🗿 <b>Gigant</b>: juda kuchli, katta<br><br>🛡/⚔ tugmasi: askarlar himoyada turadimi yoki hujumga chiqadimi.<br>🌧 <b>Yomg'ir</b>: barcha dushmanlarga zarar (40 soniyada bir marta).<br><br>G'alaba uchun tangalar olasiz, ularga Do'konda doimiy kuchaytirishlar sotib oling.</p>
+    <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
+  </div>
+
+  <div class="ov solid hide" id="end">
+    <h1 id="etitle" style="font-size:30px"></h1>
+    <p class="sub" id="etext"></p>
+    <button id="next" class="big">▶ Keyingi daraja</button>
+    <button id="again">🔁 Qayta o'ynash</button>
+    <button id="eshop" class="sec">🏪 Do'kon</button>
+    <button id="tomenu" class="sec">🏠 Menyu</button>
+  </div>
 </div>
-<div class="grid" id="grid"></div>
-<div id="msg"></div>
-<button id="restart">🔁 Qaytadan</button>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.ready(); tg.expand();
-
-const EMOJIS = ["🍎","🚀","🐱","⚽","🎸","🍕","🌟","🐼"];
-const grid = document.getElementById("grid");
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
 const $ = id => document.getElementById(id);
-let first = null, lock = false, moves = 0, found = 0, sec = 0, timer = null;
+const x = $("c").getContext("2d");
+const G = 330;
+const T = {
+  miner:  { cost: 150 },
+  sword:  { hp: 100, dmg: 12, range: 26,  sp: 55, rate: .7,  cost: 125, pop: 1 },
+  archer: { hp: 60,  dmg: 9,  range: 175, sp: 42, rate: 1.1, cost: 300, pop: 1 },
+  spear:  { hp: 230, dmg: 15, range: 34,  sp: 40, rate: .9,  cost: 250, pop: 2 },
+  giant:  { hp: 750, dmg: 42, range: 40,  sp: 28, rate: 1.3, cost: 800, pop: 4 }
+};
+const LV = [
+  { n: "Qishloq",    hp: .7,  sp: 7,   a: 50, s: 999, g: 999 },
+  { n: "O'rmon",     hp: .9,  sp: 6,   a: 35, s: 70,  g: 999 },
+  { n: "Cho'l",      hp: 1.1, sp: 5,   a: 25, s: 50,  g: 120 },
+  { n: "Tog'lar",    hp: 1.3, sp: 4.2, a: 20, s: 40,  g: 90 },
+  { n: "Qora qal'a", hp: 1.6, sp: 3.5, a: 15, s: 30,  g: 60 }
+];
+const UP = [
+  { k: "inc",  n: "⛏ Oltin tezligi",  d: "+15% daromad" },
+  { k: "dmg",  n: "⚔ Zarba kuchi",    d: "+10% zarar" },
+  { k: "hp",   n: "❤ Askar HP",       d: "+10% HP" },
+  { k: "st",   n: "🗿 Haykal HP",      d: "+150 HP" },
+  { k: "gold", n: "💰 Boshlang'ich oltin", d: "+50 oltin" }
+];
+const DEF = { coins: 0, inc: 0, dmg: 0, hp: 0, st: 0, gold: 0, prog: 1, wins: 0 };
+let D = load(), S = null, screen = "menu", lvl = 0, last = 0, clock = 0;
 
-function getBest() { try { return +localStorage.getItem("best") || 0; } catch { return 0; } }
-function setBest(v) { try { localStorage.setItem("best", v); } catch {} }
-function showBest() { $("best").textContent = getBest() || "-"; }
+function load() { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem("sr") || "{}")); } catch { return { ...DEF }; } }
+function save() { try { localStorage.setItem("sr", JSON.stringify(D)); } catch {} }
+function buzz(t) { try { tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t || "light"); } catch {} }
 
-function start() {
-  clearInterval(timer);
-  moves = 0; found = 0; sec = 0; first = null; lock = false;
-  $("moves").textContent = 0; $("time").textContent = 0; $("msg").textContent = "";
-  showBest();
-  const deck = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
-  grid.innerHTML = "";
-  deck.forEach(e => {
-    const b = document.createElement("button");
-    b.className = "card"; b.dataset.e = e; b.textContent = "?";
-    b.onclick = () => flip(b);
-    grid.appendChild(b);
-  });
-  timer = setInterval(() => $("time").textContent = ++sec, 1000);
+function newGame(l) {
+  lvl = l;
+  S = { gold: 200 + 50 * D.gold, miners: 2, mt: 0, t: 0, sp: 4, units: [], fx: [], pt: [], over: false,
+        kills: 0, mode: 0, rain: 0, rainT: 0, shake: 0, banner: 2.5,
+        hp: [1000 + 150 * D.st, 1000 * LV[l].hp], mx: [1000 + 150 * D.st, 1000 * LV[l].hp] };
+}
+function pop() { return S.units.filter(u => !u.team).reduce((a, u) => a + T[u.type].pop, 0); }
+
+function spawn(team, type) {
+  const hp = T[type].hp * (team ? LV[lvl].hp : 1 + .1 * D.hp);
+  S.units.push({ team, type, x: team ? 735 : 65, hp, mx: hp, cd: 0, ph: Math.random() * 6, atk: 0,
+                 dm: team ? 1 : 1 + .1 * D.dmg });
+}
+function buy(type) {
+  if (screen !== "play" || S.over) return;
+  const c = T[type].cost;
+  if (S.gold < c) return;
+  if (type === "miner") { if (S.miners >= 8) return; S.miners++; }
+  else { if (pop() + T[type].pop > 30) return; spawn(0, type); }
+  S.gold -= c; buzz();
+}
+function burst(px, py, c, n) {
+  for (let i = 0; i < n; i++) S.pt.push({ x: px, y: py, vx: (Math.random() - .5) * 140, vy: -Math.random() * 120, t: .5, c });
 }
 
-function flip(c) {
-  if (lock || c.classList.contains("open") || c.classList.contains("done")) return;
-  c.classList.add("open"); c.textContent = c.dataset.e;
-  if (!first) { first = c; return; }
+function update(dt) {
+  S.t += dt; S.banner -= dt; S.shake = Math.max(0, S.shake - dt);
+  S.rain = Math.max(0, S.rain - dt); S.rainT = Math.max(0, S.rainT - dt);
+  S.mt += dt * S.miners * (1 + .15 * D.inc);
+  if (S.mt >= 2) { S.mt -= 2; S.gold += 10; }
 
-  moves++; $("moves").textContent = moves;
-  if (first.dataset.e === c.dataset.e) {
-    first.className = c.className = "card done";
-    first = null; found++;
-    if (found === EMOJIS.length) win();
-  } else {
-    lock = true;
-    const a = first; first = null;
-    setTimeout(() => {
-      a.className = c.className = "card"; a.textContent = c.textContent = "?";
-      lock = false;
-    }, 700);
+  S.sp -= dt;
+  if (S.sp <= 0) {
+    const L = LV[lvl], pool = ["sword", "sword"];
+    if (S.t > L.a) pool.push("archer", "archer");
+    if (S.t > L.s) pool.push("spear");
+    if (S.t > L.g) pool.push("giant");
+    spawn(1, pool[Math.floor(Math.random() * pool.length)]);
+    S.sp = L.sp * Math.max(.6, 1 - S.t / 400);
   }
+
+  for (const u of S.units) {
+    const st = T[u.type], dir = u.team ? -1 : 1, opp = 1 - u.team;
+    u.cd -= dt; u.atk = Math.max(0, u.atk - dt);
+    let tg = null, bd = 1e9;
+    for (const o of S.units) {
+      if (o.team === u.team || o.hp <= 0) continue;
+      const d = Math.abs(o.x - u.x);
+      if (d < bd) { bd = d; tg = o; }
+    }
+    const sx = opp ? 740 : 60, sd = Math.abs(sx - u.x) - 22, dmg = st.dmg * u.dm;
+    if (tg && bd <= st.range) {
+      if (u.cd <= 0) {
+        u.cd = st.rate; u.atk = .25; tg.hp -= dmg;
+        burst(tg.x, G - 22, u.team ? "#4a6cf0" : "#e0492f", 4);
+        if (u.type === "archer") S.fx.push({ x1: u.x, x2: tg.x, t: .12 });
+        if (tg.hp <= 0 && !u.team) { S.gold += 20; S.kills++; }
+      }
+    } else if (sd <= st.range) {
+      if (u.cd <= 0) {
+        u.cd = st.rate; u.atk = .25; S.hp[opp] -= dmg; S.shake = .12;
+        burst(sx, G - 60, "#bbb", 5);
+        if (u.type === "archer") S.fx.push({ x1: u.x, x2: sx, t: .12 });
+      }
+    } else if (!(S.mode && !u.team && u.x >= 330)) {
+      u.x += dir * st.sp * dt; u.ph += dt * 8;
+    }
+  }
+  for (const u of S.units) if (u.hp <= 0) burst(u.x, G - 20, u.team ? "#e0492f" : "#4a6cf0", 10);
+  S.units = S.units.filter(u => u.hp > 0);
+  S.fx.forEach(f => f.t -= dt); S.fx = S.fx.filter(f => f.t > 0);
+  S.pt.forEach(p => { p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 300 * dt; });
+  S.pt = S.pt.filter(p => p.t > 0);
+
+  if (S.hp[1] <= 0) finish(true); else if (S.hp[0] <= 0) finish(false);
 }
 
-function win() {
-  clearInterval(timer);
-  const best = getBest();
-  if (!best || moves < best) { setBest(moves); $("msg").textContent = `🏆 Yangi rekord! ${moves} yurish`; }
-  else $("msg").textContent = `🎉 Yutdingiz! ${moves} yurish, ${sec}s`;
-  showBest();
+function rain() {
+  if (screen !== "play" || S.over || S.rain > 0) return;
+  S.rain = 40; S.rainT = .9; buzz("heavy");
+  for (const u of S.units) if (u.team) { u.hp -= 45; if (u.hp <= 0) { S.gold += 20; S.kills++; } }
 }
 
-$("restart").onclick = start;
-start();
+function finish(win) {
+  S.over = true; screen = "end";
+  const coins = win ? 25 * (lvl + 1) + S.kills : 5 + S.kills;
+  D.coins += coins;
+  if (win) { D.wins++; if (lvl + 2 > D.prog) D.prog = Math.min(LV.length, lvl + 2); }
+  save();
+  $("etitle").textContent = win ? "🏆 G'alaba!" : "💀 Mag'lubiyat";
+  $("etext").innerHTML = (win ? "Dushman haykali vayron bo'ldi!" : "Haykalingiz yiqildi.") +
+    "<br>⏱ " + Math.floor(S.t) + " soniya · 💀 " + S.kills + " dushman<br>🪙 +" + coins + " tanga";
+  $("next").style.display = (win && lvl < LV.length - 1) ? "" : "none";
+  show("end");
+}
+
+/* ---------- chizish ---------- */
+function bar(x0, y, w, p) {
+  x.fillStyle = "rgba(0,0,0,.45)"; x.fillRect(x0, y, w, 5);
+  x.fillStyle = p > .5 ? "#4c4" : "#e44"; x.fillRect(x0, y, w * Math.max(0, p), 5);
+}
+function stick(px, col, ph, type, atk, dir) {
+  const k = type === "giant" ? 1.7 : 1;
+  x.save(); x.translate(px, G); x.scale(k, k);
+  x.strokeStyle = col; x.fillStyle = col; x.lineWidth = 3 / k; x.lineCap = "round";
+  const sw = Math.sin(ph) * 6;
+  x.beginPath(); x.arc(0, -36, 6, 0, 7); x.fill();
+  x.beginPath();
+  x.moveTo(0, -30); x.lineTo(0, -13);
+  x.moveTo(0, -13); x.lineTo(-sw, 0); x.moveTo(0, -13); x.lineTo(sw, 0);
+  x.moveTo(0, -26); x.lineTo(dir * 11, -24);
+  x.stroke();
+  if (type === "sword") {
+    x.strokeStyle = "#dde"; x.beginPath();
+    x.moveTo(dir * 11, -24); x.lineTo(dir * 26, atk > 0 ? -2 : -44); x.stroke();
+  } else if (type === "archer") {
+    x.strokeStyle = "#a76"; x.beginPath();
+    x.arc(dir * 12, -24, 11, dir > 0 ? -1.2 : Math.PI - 1.2, dir > 0 ? 1.2 : Math.PI + 1.2); x.stroke();
+  } else if (type === "spear") {
+    x.strokeStyle = "#dde"; x.beginPath();
+    x.moveTo(dir * (6 + (atk > 0 ? 12 : 0)), -22); x.lineTo(dir * (36 + (atk > 0 ? 12 : 0)), -26); x.stroke();
+    x.fillStyle = "#c9a227"; x.beginPath(); x.arc(dir * 7, -22, 9, 0, 7); x.fill();
+  } else {
+    x.strokeStyle = "#8a5a2b"; x.lineWidth = 5 / k; x.beginPath();
+    x.moveTo(dir * 11, -24); x.lineTo(dir * (atk > 0 ? 24 : 18), atk > 0 ? -4 : -50); x.stroke();
+  }
+  x.restore();
+}
+function statue(cx, col, hp, mx) {
+  x.fillStyle = "#777"; x.fillRect(cx - 24, G - 12, 48, 12);
+  x.fillStyle = col; x.fillRect(cx - 14, G - 100, 28, 90);
+  x.fillStyle = "#bbb"; x.beginPath(); x.arc(cx, G - 112, 12, 0, 7); x.fill();
+  bar(cx - 26, G - 135, 52, hp / mx);
+}
+function scene() {
+  const g = x.createLinearGradient(0, 0, 0, G);
+  g.addColorStop(0, "#6fb0ff"); g.addColorStop(1, "#f0e6d0");
+  x.fillStyle = g; x.fillRect(0, 0, 800, G);
+  x.fillStyle = "#fff"; x.globalAlpha = .7;
+  for (let i = 0; i < 4; i++) {
+    const cx = ((clock * 8 + i * 230) % 1000) - 100;
+    x.beginPath(); x.arc(cx, 60 + i * 22, 22, 0, 7); x.arc(cx + 26, 66 + i * 22, 18, 0, 7); x.arc(cx - 24, 68 + i * 22, 16, 0, 7); x.fill();
+  }
+  x.globalAlpha = 1;
+  x.fillStyle = "#9db4c9"; x.beginPath(); x.moveTo(0, G);
+  [[150, 190], [300, G], [450, 220], [620, G], [720, 200], [800, G]].forEach(p => x.lineTo(p[0], p[1]));
+  x.fill();
+  x.fillStyle = "#6b5a45"; x.fillRect(0, G, 800, 70);
+  x.fillStyle = "#4f8a3a"; x.fillRect(0, G, 800, 8);
+}
+function demo() {
+  scene(); statue(40, "#3b6df0", 1, 1); statue(760, "#d9402b", 1, 1);
+  const types = ["sword", "spear", "archer", "giant", "sword", "spear"];
+  types.forEach((t, i) => {
+    const a = ((clock * 35 + i * 130) % 700) + 70, b = 800 - (((clock * 35 + i * 150) % 700) + 70);
+    stick(a, "#2a4fc0", clock * 8 + i, t, 0, 1);
+    stick(b, "#d9402b", clock * 8 + i, types[(i + 2) % 6], 0, -1);
+  });
+}
+function draw() {
+  if (!S) return demo();
+  x.save();
+  if (S.shake > 0) x.translate((Math.random() - .5) * 6, (Math.random() - .5) * 6);
+  scene();
+  statue(40, "#3b6df0", S.hp[0], S.mx[0]);
+  statue(760, "#d9402b", S.hp[1], S.mx[1]);
+  x.fillStyle = "#f3c623";
+  [[0, 0], [14, 0], [-12, 0]].forEach(p => { x.beginPath(); x.arc(225 + p[0], G - 2, 9, Math.PI, 0); x.fill(); });
+  for (let i = 0; i < S.miners; i++) {
+    const mx = 100 + i * 14, sw = Math.sin(S.t * 6 + i) * 8;
+    x.strokeStyle = "#2a4fc0"; x.lineWidth = 3;
+    x.beginPath(); x.arc(mx, G - 36, 6, 0, 7); x.stroke();
+    x.beginPath(); x.moveTo(mx, G - 30); x.lineTo(mx, G - 13); x.lineTo(mx - 4, G);
+    x.moveTo(mx, G - 13); x.lineTo(mx + 4, G); x.moveTo(mx, G - 26); x.lineTo(mx + 10, G - 30 + sw * .5); x.stroke();
+  }
+  for (const u of S.units) {
+    stick(u.x, u.team ? "#d9402b" : "#2a4fc0", u.ph, u.type, u.atk, u.team ? -1 : 1);
+    if (u.hp < u.mx) bar(u.x - 10, G - (u.type === "giant" ? 82 : 50), 20, u.hp / u.mx);
+  }
+  x.strokeStyle = "#fff"; x.lineWidth = 2;
+  for (const f of S.fx) { x.beginPath(); x.moveTo(f.x1, G - 24); x.lineTo(f.x2, G - 24); x.stroke(); }
+  for (const p of S.pt) { x.fillStyle = p.c; x.fillRect(p.x, p.y, 3, 3); }
+  if (S.rainT > 0) {
+    x.strokeStyle = "#fff8"; x.lineWidth = 2;
+    for (let i = 0; i < 45; i++) {
+      const rx = (i * 83 + S.t * 500) % 800, ry = ((i * 47) + (1 - S.rainT) * 900) % G;
+      x.beginPath(); x.moveTo(rx, ry); x.lineTo(rx - 8, ry + 24); x.stroke();
+    }
+  }
+  if (S.banner > 0) {
+    x.globalAlpha = Math.min(1, S.banner); x.fillStyle = "#000a"; x.fillRect(0, 150, 800, 70);
+    x.fillStyle = "#fff"; x.font = "bold 32px system-ui"; x.textAlign = "center";
+    x.fillText("Daraja " + (lvl + 1) + ": " + LV[lvl].n, 400, 195); x.globalAlpha = 1; x.textAlign = "left";
+  }
+  x.restore();
+}
+
+/* ---------- interfeys ---------- */
+const VIEWS = { menu: "menu", levels: "levels", shop: "shopv", how: "howto", end: "end" };
+function show(n) {
+  if (n !== "end") screen = "menu";
+  Object.values(VIEWS).forEach(id => $(id).classList.add("hide"));
+  $(VIEWS[n]).classList.remove("hide");
+  if (n === "menu") {
+    $("stats").textContent = "🏆 " + D.wins + "  ·  🪙 " + D.coins;
+    $("resume").style.display = (S && !S.over) ? "" : "none";
+  }
+  if (n === "levels") renderLevels();
+  if (n === "shop") renderShop();
+}
+function hideAll() { Object.values(VIEWS).forEach(id => $(id).classList.add("hide")); }
+function play(l) { newGame(l); screen = "play"; hideAll(); }
+
+function renderLevels() {
+  $("lvgrid").innerHTML = "";
+  LV.forEach((l, i) => {
+    const d = document.createElement("div"); d.className = "card";
+    const ok = i < D.prog;
+    d.innerHTML = "<span><b>Daraja " + (i + 1) + "</b><br>" + l.n + "</span>";
+    const b = document.createElement("button");
+    b.textContent = ok ? "▶ O'ynash" : "🔒"; b.disabled = !ok; b.onclick = () => play(i);
+    d.appendChild(b); $("lvgrid").appendChild(d);
+  });
+}
+function renderShop() {
+  $("coins").textContent = D.coins; $("shgrid").innerHTML = "";
+  UP.forEach(u => {
+    const lv = D[u.k], cost = 40 * (lv + 1), d = document.createElement("div"); d.className = "card";
+    d.innerHTML = "<span><b>" + u.n + "</b> (" + lv + "/5)<br>" + u.d + "</span>";
+    const b = document.createElement("button");
+    b.textContent = lv >= 5 ? "MAX" : "🪙 " + cost; b.disabled = lv >= 5 || D.coins < cost;
+    b.onclick = () => { D.coins -= cost; D[u.k]++; save(); buzz(); renderShop(); };
+    d.appendChild(b); $("shgrid").appendChild(d);
+  });
+}
+
+$("camp").onclick = () => show("levels");
+$("shop").onclick = () => show("shop");
+$("how").onclick = () => show("how");
+$("resume").onclick = () => { screen = "play"; hideAll(); };
+$("next").onclick = () => play(lvl + 1);
+$("again").onclick = () => play(lvl);
+$("eshop").onclick = () => show("shop");
+$("tomenu").onclick = () => { S = null; show("menu"); };
+$("pause").onclick = () => { if (screen === "play") show("menu"); };
+$("bm").onclick = () => buy("miner");
+$("bs").onclick = () => buy("sword");
+$("ba").onclick = () => buy("archer");
+$("bp").onclick = () => buy("spear");
+$("bg").onclick = () => buy("giant");
+$("brain").onclick = rain;
+$("bmode").onclick = () => { if (S && screen === "play") S.mode ^= 1; };
+
+function loop(t) {
+  const dt = Math.min(.05, (t - last) / 1000); last = t; clock += dt;
+  if (screen === "play") {
+    update(dt);
+    const p = pop();
+    $("gold").textContent = Math.floor(S.gold);
+    $("info").textContent = "⏱" + Math.floor(S.t) + "s  👥" + p + "/30";
+    $("bm").disabled = S.gold < 150 || S.miners >= 8;
+    [["bs", "sword"], ["ba", "archer"], ["bp", "spear"], ["bg", "giant"]].forEach(a =>
+      $(a[0]).disabled = S.gold < T[a[1]].cost || p + T[a[1]].pop > 30);
+    $("bmode").textContent = S.mode ? "⚔ Hujum qilish" : "🛡 Mudofaada turish";
+    $("brain").textContent = S.rain > 0 ? "🌧 " + Math.ceil(S.rain) + "s" : "🌧 Yomg'ir";
+    $("brain").disabled = S.rain > 0;
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+show("menu");
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
