@@ -9,32 +9,31 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{margin:0;background:#0f1117;color:#fff;font-family:system-ui,sans-serif}
 #app{position:relative;max-width:820px;margin:0 auto;padding:8px}
-canvas{width:100%;display:block;border-radius:12px;background:#cfe8ff}
-.bar{display:flex;justify-content:space-between;align-items:center;margin:2px 2px 8px;font-weight:700;font-size:15px}
+canvas{width:100%;display:block;border-radius:12px;touch-action:none}
+.bar{display:flex;justify-content:space-between;align-items:center;margin:2px 2px 8px;font-weight:700;font-size:14px}
 .row{display:flex;gap:6px;margin-top:6px}
 button{font:inherit;border:0;border-radius:12px;color:#fff;background:#3b6df0;padding:10px 6px}
 button:active{transform:scale(.96)}
 button:disabled{opacity:.35}
-.u{flex:1;font-size:12px;line-height:1.25;background:#26304a;border:1px solid #3b4a75}
+.u{flex:1;font-size:11px;line-height:1.25;background:#26304a;border:1px solid #3b4a75}
 .u b{display:block;font-size:20px}
-.m{flex:1;font-size:14px;background:#4a2a2a}
+.m{flex:1;font-size:13px;background:#33384a}
+.m.on{background:#e0492f}
 .sec{background:#2a2f3d}
-.ov{position:absolute;inset:8px;border-radius:12px;background:rgba(10,12,18,.62);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px;overflow:auto}
+.ov{position:fixed;inset:8px;max-width:804px;margin:0 auto;border-radius:12px;background:rgba(10,12,18,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px;overflow:auto;z-index:5}
 .ov.hide{display:none}
-.ov.solid{background:rgba(10,12,18,.96)}
-h1{margin:0;font-size:36px;letter-spacing:3px;background:linear-gradient(#fff,#f3b53a 60%,#d9402b);-webkit-background-clip:text;color:transparent}
+#menu{background:rgba(10,12,18,.2);justify-content:flex-start;padding-top:12px}
+h1{margin:0;font-size:30px;letter-spacing:3px;background:linear-gradient(#fff,#f3b53a 60%,#d9402b);-webkit-background-clip:text;color:transparent}
 h2{margin:0;font-size:24px}
 .sub{color:#c8cdd8;font-size:14px;margin:0;max-width:430px;line-height:1.5}
 .ov>button{width:250px;font-size:17px;padding:13px}
+.ov>button.wide{width:100%;max-width:440px}
 .big{background:linear-gradient(#e8613f,#b92f1c)}
 .grid{display:grid;gap:8px;width:100%;max-width:420px}
 .card{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#1b2030;border:1px solid #333b55;border-radius:12px;padding:10px;text-align:left;font-size:14px}
+.card.done{border-color:#4c4}
 .card button{padding:8px 12px;font-size:14px;white-space:nowrap}
 .pill{background:#1b2030;border:1px solid #333b55;border-radius:20px;padding:5px 12px;font-size:14px}
-.ov{position:fixed;inset:8px;max-width:804px;margin:0 auto;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-.ov.solid{background:rgba(10,12,18,.78)}
-#menu{background:rgba(10,12,18,.2);justify-content:flex-start;padding-top:12px}
-#menu h1{font-size:30px}
 .glass,.tile{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:14px}
 .hdr{width:100%;max-width:440px;display:flex;justify-content:space-between;align-items:center;padding:8px 12px;text-align:left}
 .mut{color:#d5dae6;font-size:12px}
@@ -43,8 +42,6 @@ h2{margin:0;font-size:24px}
 .tile b{font-size:24px}
 .tile small{font-size:11px;font-weight:400;color:#d5dae6}
 .tile.big{grid-column:1/3;background:linear-gradient(rgba(232,97,63,.8),rgba(185,47,28,.8))}
-.ov>button.wide{width:100%;max-width:440px;font-size:16px;padding:12px}
-.done{border-color:#4c4}
 </style>
 </head>
 <body>
@@ -55,12 +52,14 @@ h2{margin:0;font-size:24px}
     <button class="u" id="bm"><b>⛏</b>Konchi 150</button>
     <button class="u" id="bs"><b>⚔</b>Qilich 125</button>
     <button class="u" id="ba"><b>🏹</b>Kamon 300</button>
-    <button class="u" id="bp"><b>🛡</b>Nayza 250</button>
-    <button class="u" id="bg"><b>🗿</b>Gigant 800</button>
+    <button class="u" id="bp"><b>🛡</b>Nayza 400</button>
+    <button class="u" id="bg"><b>🗿</b>Gigant 900</button>
   </div>
   <div class="row">
-    <button class="m" id="bmode">🛡 Mudofaa</button>
-    <button class="m" id="brain">🌧 Yomg'ir</button>
+    <button class="m" id="s0">🏰 Himoya</button>
+    <button class="m" id="s1">🛡 Oldinda</button>
+    <button class="m" id="s2">⚔ Hujum</button>
+    <button class="m" id="cc">🎯</button>
   </div>
 
   <div class="ov" id="menu">
@@ -77,42 +76,17 @@ h2{margin:0;font-size:24px}
       <button id="setb" class="tile"><b>⚙</b>Sozlamalar<small>Vibratsiya, reset</small></button>
     </div>
   </div>
-
-  <div class="ov solid hide" id="achv">
-    <h2>🏅 Yutuqlar</h2>
-    <div class="pill" id="achstat"></div>
-    <div class="grid" id="achgrid"></div>
-    <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
-  </div>
-
-  <div class="ov solid hide" id="setv">
-    <h2>⚙ Sozlamalar</h2>
-    <button id="vibb" class="sec"></button>
-    <button id="resetb" class="sec"></button>
-    <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
-  </div>
-
-  <div class="ov solid hide" id="levels">
-    <h2>⚔ Kampaniya</h2>
-    <div class="grid" id="lvgrid"></div>
-    <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
-  </div>
-
-  <div class="ov solid hide" id="shopv">
-    <h2>🏪 Do'kon</h2>
-    <div class="pill">🪙 Tangalar: <b id="coins"></b></div>
-    <div class="grid" id="shgrid"></div>
-    <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
-  </div>
-
-  <div class="ov solid hide" id="howto">
+  <div class="ov hide" id="levels"><h2>⚔ Kampaniya</h2><div class="grid" id="lvgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
+  <div class="ov hide" id="shopv"><h2>🏪 Do'kon</h2><div class="pill">🪙 Tangalar: <b id="coins"></b></div><div class="grid" id="shgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
+  <div class="ov hide" id="achv"><h2>🏅 Yutuqlar</h2><div class="pill" id="achstat"></div><div class="grid" id="achgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
+  <div class="ov hide" id="setv"><h2>⚙ Sozlamalar</h2><button id="vibb" class="sec"></button><button id="resetb" class="sec"></button><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
+  <div class="ov hide" id="howto">
     <h2>📖 Qo'llanma</h2>
-    <p class="sub">⛏ <b>Konchi</b>: oltin qazadi<br>⚔ <b>Qilich</b>: arzon jangchi<br>🏹 <b>Kamon</b>: uzoqdan otadi<br>🛡 <b>Nayza</b>: qalqonli, bardoshli<br>🗿 <b>Gigant</b>: juda kuchli, katta<br><br>🛡/⚔ tugmasi: askarlar himoyada turadimi yoki hujumga chiqadimi.<br>🌧 <b>Yomg'ir</b>: barcha dushmanlarga zarar (40 soniyada bir marta).<br><br>G'alaba uchun tangalar olasiz, ularga Do'konda doimiy kuchaytirishlar sotib oling.</p>
+    <p class="sub">👆 Jang maydonini <b>barmoq bilan suring</b>. 🎯 tugmasi armiyangizga qaytaradi.<br><br>⛏ Konchilar oltin konigacha yurib, haykalga olib keladi.<br>⚔ Qilich, 🏹 kamon, 🛡 nayza, 🗿 gigant navbat bilan tayyorlanadi.<br><br>🏰 <b>Himoya</b>: haykal yonida turadi<br>🛡 <b>Oldinda</b>: maydon o'rtasida kutadi<br>⚔ <b>Hujum</b>: dushman haykaliga yuradi<br><br>Dushman haykalini yo'q qiling!</p>
     <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
   </div>
-
-  <div class="ov solid hide" id="end">
-    <h1 id="etitle" style="font-size:30px"></h1>
+  <div class="ov hide" id="end">
+    <h1 id="etitle" style="font-size:28px"></h1>
     <p class="sub" id="etext"></p>
     <button id="next" class="big">▶ Keyingi daraja</button>
     <button id="again">🔁 Qayta o'ynash</button>
@@ -124,68 +98,77 @@ h2{margin:0;font-size:24px}
 <script>
 const tg = window.Telegram && Telegram.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
-const $ = id => document.getElementById(id);
-const x = $("c").getContext("2d");
-const G = 330;
+const $ = id => document.getElementById(id), cv = $("c"), x = cv.getContext("2d");
+const W = 2400, G = 330, PS = 130, ES = 2270, PM = 370;
 const T = {
-  miner:  { cost: 150 },
-  sword:  { hp: 100, dmg: 12, range: 26,  sp: 55, rate: .7,  cost: 125, pop: 1 },
-  archer: { hp: 60,  dmg: 9,  range: 175, sp: 42, rate: 1.1, cost: 300, pop: 1 },
-  spear:  { hp: 230, dmg: 15, range: 34,  sp: 40, rate: .9,  cost: 250, pop: 2 },
-  giant:  { hp: 750, dmg: 42, range: 40,  sp: 28, rate: 1.3, cost: 800, pop: 4 }
+  miner:  { hp: 40,  cost: 150, pop: 1, tr: 2 },
+  sword:  { hp: 110, dmg: 14, rg: 26,  sp: 62, rt: .7,  cost: 125, pop: 1, tr: 2 },
+  archer: { hp: 60,  dmg: 11, rg: 230, sp: 50, rt: 1.3, cost: 300, pop: 1, tr: 3 },
+  spear:  { hp: 260, dmg: 18, rg: 36,  sp: 46, rt: 1,   cost: 400, pop: 2, tr: 4 },
+  giant:  { hp: 900, dmg: 55, rg: 46,  sp: 30, rt: 1.4, cost: 900, pop: 4, tr: 8 }
 };
 const LV = [
-  { n: "Qishloq",    hp: .7,  sp: 7,   a: 50, s: 999, g: 999 },
-  { n: "O'rmon",     hp: .9,  sp: 6,   a: 35, s: 70,  g: 999 },
-  { n: "Cho'l",      hp: 1.1, sp: 5,   a: 25, s: 50,  g: 120 },
-  { n: "Tog'lar",    hp: 1.3, sp: 4.2, a: 20, s: 40,  g: 90 },
-  { n: "Qora qal'a", hp: 1.6, sp: 3.5, a: 15, s: 30,  g: 60 },
-  { n: "Cheksiz", hp: 1, sp: 5, a: 20, s: 40, g: 80, endless: 1 }
+  { n: "Qishloq",    hp: .7,  sp: 9, a: 60, s: 999, g: 999 },
+  { n: "O'rmon",     hp: .9,  sp: 8, a: 40, s: 80,  g: 999 },
+  { n: "Cho'l",      hp: 1.1, sp: 7, a: 30, s: 60,  g: 130 },
+  { n: "Tog'lar",    hp: 1.3, sp: 6, a: 24, s: 45,  g: 100 },
+  { n: "Qora qal'a", hp: 1.6, sp: 5, a: 18, s: 35,  g: 70 },
+  { n: "Cheksiz",    hp: 1,   sp: 6, a: 25, s: 50,  g: 90, endless: 1 }
 ];
 const UP = [
-  { k: "inc",  n: "⛏ Oltin tezligi",  d: "+15% daromad" },
-  { k: "dmg",  n: "⚔ Zarba kuchi",    d: "+10% zarar" },
-  { k: "hp",   n: "❤ Askar HP",       d: "+10% HP" },
-  { k: "st",   n: "🗿 Haykal HP",      d: "+150 HP" },
+  { k: "inc",  n: "⛏ Oltin tashish", d: "+15% oltin" },
+  { k: "dmg",  n: "⚔ Zarba kuchi",   d: "+10% zarar" },
+  { k: "hp",   n: "❤ Askar HP",      d: "+10% HP" },
+  { k: "st",   n: "🗿 Haykal HP",     d: "+200 HP" },
   { k: "gold", n: "💰 Boshlang'ich oltin", d: "+50 oltin" }
 ];
 const DEF = { coins: 0, inc: 0, dmg: 0, hp: 0, st: 0, gold: 0, prog: 1, wins: 0, kills: 0, best: 0, daily: "", vib: 1 };
-let D = load(), S = null, screen = "menu", lvl = 0, last = 0, clock = 0;
+let D = load(), S = null, screen = "menu", lvl = 0, last = 0, clock = 0, drag = null, resetArm = false;
 
 function load() { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem("sr") || "{}")); } catch { return { ...DEF }; } }
 function save() { try { localStorage.setItem("sr", JSON.stringify(D)); } catch {} }
 function buzz(t) { try { D.vib && tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t || "light"); } catch {} }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 function newGame(l) {
   lvl = l;
-  S = { gold: 200 + 50 * D.gold, miners: 2, mt: 0, t: 0, sp: 4, units: [], fx: [], pt: [], over: false,
-        kills: 0, mode: 0, rain: 0, rainT: 0, shake: 0, banner: 2.5,
-        hp: [1000 + 150 * D.st, LV[l].endless ? 1e9 : 1000 * LV[l].hp], mx: [1000 + 150 * D.st, LV[l].endless ? 1e9 : 1000 * LV[l].hp] };
+  const eh = LV[l].endless ? 1e9 : 1500 * LV[l].hp, ph = 1500 + 200 * D.st;
+  S = { gold: 300 + 50 * D.gold, mine: 6000, t: 0, sp: 6, u: [], dead: [], ar: [], pt: [], q: [], over: false,
+        kills: 0, cam: 0, idle: 0, stance: 1, shake: 0, banner: 2.5, hp: [ph, eh], mx: [ph, eh] };
+  add(0, "miner"); add(0, "miner");
 }
-function pop() { return S.units.filter(u => !u.team).reduce((a, u) => a + T[u.type].pop, 0); }
-
-function spawn(team, type) {
-  const hp = T[type].hp * (team ? LV[lvl].hp * (LV[lvl].endless ? 1 + S.t / 150 : 1) : 1 + .1 * D.hp);
-  S.units.push({ team, type, x: team ? 735 : 65, hp, mx: hp, cd: 0, ph: Math.random() * 6, atk: 0,
-                 dm: team ? 1 : 1 + .1 * D.dmg });
+function add(team, type) {
+  const m = team ? LV[lvl].hp * (LV[lvl].endless ? 1 + S.t / 150 : 1) : 1 + .1 * D.hp;
+  S.u.push({ t: type, team, x: team ? ES - 40 : PS + 40, hp: T[type].hp * m, mx: T[type].hp * m,
+             cd: 0, ph: Math.random() * 6, atk: 0, dm: team ? 1 : 1 + .1 * D.dmg, st: 0, mt: 0, carry: 0 });
+}
+function pop() {
+  return S.u.filter(u => !u.team).reduce((a, u) => a + T[u.t].pop, 0) + S.q.reduce((a, q) => a + T[q.t].pop, 0);
 }
 function buy(type) {
   if (screen !== "play" || S.over) return;
-  const c = T[type].cost;
-  if (S.gold < c) return;
-  if (type === "miner") { if (S.miners >= 8) return; S.miners++; }
-  else { if (pop() + T[type].pop > 30) return; spawn(0, type); }
-  S.gold -= c; buzz();
+  const c = T[type];
+  if (S.gold < c.cost || pop() + c.pop > 30 || S.q.length >= 6) return;
+  S.gold -= c.cost; S.q.push({ t: type, rem: c.tr }); buzz();
 }
-function burst(px, py, c, n) {
-  for (let i = 0; i < n; i++) S.pt.push({ x: px, y: py, vx: (Math.random() - .5) * 140, vy: -Math.random() * 120, t: .5, c });
+function burst(px, py, col, n) {
+  for (let i = 0; i < n; i++) S.pt.push({ x: px, y: py, vx: (Math.random() - .5) * 140, vy: -Math.random() * 120, t: .5, c: col });
+}
+
+function hit(u, tg, st) {
+  if (u.cd > 0) return;
+  u.cd = st.rt; u.atk = .25;
+  if (u.t === "archer") {
+    const dir = Math.sign(tg - u.x) || 1, tt = Math.abs(tg - u.x) / 300;
+    S.ar.push({ x: u.x, y: G - 32, vx: dir * 300, vy: -250 * tt, team: u.team, dm: st.dmg * u.dm });
+  } else {
+    return true;
+  }
 }
 
 function update(dt) {
-  S.t += dt; S.banner -= dt; S.shake = Math.max(0, S.shake - dt);
-  S.rain = Math.max(0, S.rain - dt); S.rainT = Math.max(0, S.rainT - dt);
-  S.mt += dt * S.miners * (1 + .15 * D.inc);
-  if (S.mt >= 2) { S.mt -= 2; S.gold += 10; }
+  S.t += dt; S.banner -= dt; S.idle += dt; S.shake = Math.max(0, S.shake - dt);
+  if (S.q.length) { S.q[0].rem -= dt; if (S.q[0].rem <= 0) { add(0, S.q[0].t); S.q.shift(); } }
 
   S.sp -= dt;
   if (S.sp <= 0) {
@@ -193,50 +176,76 @@ function update(dt) {
     if (S.t > L.a) pool.push("archer", "archer");
     if (S.t > L.s) pool.push("spear");
     if (S.t > L.g) pool.push("giant");
-    spawn(1, pool[Math.floor(Math.random() * pool.length)]);
-    S.sp = L.sp * Math.max(.6, 1 - S.t / 400);
+    if (S.u.filter(u => u.team).length < 25) add(1, pool[Math.floor(Math.random() * pool.length)]);
+    S.sp = L.sp * Math.max(.55, 1 - S.t / 500);
   }
 
-  for (const u of S.units) {
-    const st = T[u.type], dir = u.team ? -1 : 1, opp = 1 - u.team;
+  for (const u of S.u) {
+    const st = T[u.t], opp = 1 - u.team;
     u.cd -= dt; u.atk = Math.max(0, u.atk - dt);
+    if (u.t === "miner") {
+      if (u.st === 0) {
+        if (Math.abs(u.x - PM) > 6) { u.x += Math.sign(PM - u.x) * 45 * dt; u.ph += dt * 8; }
+        else { u.st = 1; u.mt = 1.4; }
+      } else if (u.st === 1) {
+        u.mt -= dt;
+        if (u.mt <= 0 && S.mine > 0) { const k = Math.min(S.mine, Math.round(14 * (1 + .15 * D.inc))); S.mine -= k; u.carry = k; u.st = 2; }
+      } else {
+        const hx = PS + 40;
+        if (Math.abs(u.x - hx) > 6) { u.x += Math.sign(hx - u.x) * 45 * dt; u.ph += dt * 8; }
+        else { S.gold += u.carry; u.carry = 0; u.st = 0; }
+      }
+      continue;
+    }
     let tg = null, bd = 1e9;
-    for (const o of S.units) {
-      if (o.team === u.team || o.hp <= 0) continue;
+    for (const o of S.u) {
+      if (o.team === u.team) continue;
       const d = Math.abs(o.x - u.x);
       if (d < bd) { bd = d; tg = o; }
     }
-    const sx = opp ? 740 : 60, sd = Math.abs(sx - u.x) - 22, dmg = st.dmg * u.dm;
-    if (tg && bd <= st.range) {
-      if (u.cd <= 0) {
-        u.cd = st.rate; u.atk = .25; tg.hp -= dmg;
-        burst(tg.x, G - 22, u.team ? "#4a6cf0" : "#e0492f", 4);
-        if (u.type === "archer") S.fx.push({ x1: u.x, x2: tg.x, t: .12 });
-        if (tg.hp <= 0 && !u.team) { S.gold += 20; S.kills++; }
-      }
-    } else if (sd <= st.range) {
-      if (u.cd <= 0) {
-        u.cd = st.rate; u.atk = .25; S.hp[opp] -= dmg; S.shake = .12;
-        burst(sx, G - 60, "#bbb", 5);
-        if (u.type === "archer") S.fx.push({ x1: u.x, x2: sx, t: .12 });
-      }
-    } else if (!(S.mode && !u.team && u.x >= 330)) {
-      u.x += dir * st.sp * dt; u.ph += dt * 8;
+    const aggro = Math.max(st.rg, u.team ? 420 : [150, 260, 380][S.stance]);
+    const es = opp ? ES : PS, sd = Math.abs(es - u.x) - 30;
+    if (tg && bd <= aggro) {
+      if (bd <= st.rg) {
+        if (hit(u, tg.x, st)) {
+          tg.hp -= st.dmg * u.dm; burst(tg.x, G - 22, u.team ? "#4a6cf0" : "#e0492f", 4);
+        }
+      } else { u.x += Math.sign(tg.x - u.x) * st.sp * dt; u.ph += dt * 8; }
+    } else if (sd <= st.rg) {
+      if (hit(u, es, st)) { S.hp[opp] -= st.dmg * u.dm; S.shake = .1; burst(es, G - 60, "#bbb", 5); }
+    } else {
+      const goal = u.team ? PS : [PS + 90, 900, ES - 30][S.stance];
+      if (Math.abs(goal - u.x) > 6) { u.x += Math.sign(goal - u.x) * st.sp * dt; u.ph += dt * 8; }
     }
   }
-  for (const u of S.units) if (u.hp <= 0) burst(u.x, G - 20, u.team ? "#e0492f" : "#4a6cf0", 10);
-  S.units = S.units.filter(u => u.hp > 0);
-  S.fx.forEach(f => f.t -= dt); S.fx = S.fx.filter(f => f.t > 0);
+
+  for (const a of S.ar) {
+    a.vy += 500 * dt; a.x += a.vx * dt; a.y += a.vy * dt;
+    for (const o of S.u) {
+      if (o.team !== a.team && Math.abs(o.x - a.x) < 12 && a.y > G - 62) { o.hp -= a.dm; a.y = 999; burst(o.x, G - 25, "#fc6", 3); break; }
+    }
+    const sx = a.team ? PS : ES;
+    if (a.y < 900 && Math.abs(a.x - sx) < 30 && a.y > G - 125) { S.hp[1 - a.team] -= a.dm; a.y = 999; S.shake = .08; }
+    if (a.y > G) a.y = 999;
+  }
+  S.ar = S.ar.filter(a => a.y < 900 && a.x > 0 && a.x < W);
+
+  for (const u of S.u) if (u.hp <= 0) {
+    S.dead.push({ x: u.x, t: u.t, team: u.team, k: 1.2 });
+    burst(u.x, G - 20, u.team ? "#e0492f" : "#4a6cf0", 8);
+    if (u.team) { S.gold += 20; S.kills++; }
+  }
+  S.u = S.u.filter(u => u.hp > 0);
+  S.dead.forEach(d => d.k -= dt); S.dead = S.dead.filter(d => d.k > 0);
   S.pt.forEach(p => { p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 300 * dt; });
   S.pt = S.pt.filter(p => p.t > 0);
 
+  if (S.idle > 3) {
+    const mine = S.u.filter(u => !u.team && u.t !== "miner").map(u => u.x);
+    const fx = mine.length ? Math.max(...mine) : PS;
+    S.cam += (clamp(fx - 400, 0, W - 800) - S.cam) * Math.min(1, dt * 1.5);
+  }
   if (S.hp[1] <= 0) finish(true); else if (S.hp[0] <= 0) finish(false);
-}
-
-function rain() {
-  if (screen !== "play" || S.over || S.rain > 0) return;
-  S.rain = 40; S.rainT = .9; buzz("heavy");
-  for (const u of S.units) if (u.team) { u.hp -= 45; if (u.hp <= 0) { S.gold += 20; S.kills++; } }
 }
 
 function finish(win) {
@@ -257,117 +266,123 @@ function finish(win) {
 
 /* ---------- chizish ---------- */
 function bar(x0, y, w, p) {
-  x.fillStyle = "rgba(0,0,0,.45)"; x.fillRect(x0, y, w, 5);
-  x.fillStyle = p > .5 ? "#4c4" : "#e44"; x.fillRect(x0, y, w * Math.max(0, p), 5);
+  x.fillStyle = "rgba(0,0,0,.5)"; x.fillRect(x0, y, w, 5);
+  x.fillStyle = p > .5 ? "#4c4" : "#e44"; x.fillRect(x0, y, w * clamp(p, 0, 1), 5);
 }
-function stick(px, col, ph, type, atk, dir) {
+function stick(px, col, ph, type, atk, dir, carry) {
   const k = type === "giant" ? 1.7 : 1;
   x.save(); x.translate(px, G); x.scale(k, k);
   x.strokeStyle = col; x.fillStyle = col; x.lineWidth = 3 / k; x.lineCap = "round";
-  const sw = Math.sin(ph) * 6;
+  const sw = Math.sin(ph) * 7;
   x.beginPath(); x.arc(0, -36, 6, 0, 7); x.fill();
   x.beginPath();
   x.moveTo(0, -30); x.lineTo(0, -13);
   x.moveTo(0, -13); x.lineTo(-sw, 0); x.moveTo(0, -13); x.lineTo(sw, 0);
   x.moveTo(0, -26); x.lineTo(dir * 11, -24);
   x.stroke();
+  if (carry) { x.fillStyle = "#f3c623"; x.fillRect(-dir * 9, -30, 7, 9); }
   if (type === "sword") {
-    x.strokeStyle = "#dde"; x.beginPath();
-    x.moveTo(dir * 11, -24); x.lineTo(dir * 26, atk > 0 ? -2 : -44); x.stroke();
+    x.strokeStyle = "#dde"; x.beginPath(); x.moveTo(dir * 11, -24); x.lineTo(dir * 26, atk > 0 ? -2 : -44); x.stroke();
   } else if (type === "archer") {
     x.strokeStyle = "#a76"; x.beginPath();
     x.arc(dir * 12, -24, 11, dir > 0 ? -1.2 : Math.PI - 1.2, dir > 0 ? 1.2 : Math.PI + 1.2); x.stroke();
   } else if (type === "spear") {
-    x.strokeStyle = "#dde"; x.beginPath();
-    x.moveTo(dir * (6 + (atk > 0 ? 12 : 0)), -22); x.lineTo(dir * (36 + (atk > 0 ? 12 : 0)), -26); x.stroke();
+    const o = atk > 0 ? 12 : 0;
+    x.strokeStyle = "#dde"; x.beginPath(); x.moveTo(dir * (6 + o), -22); x.lineTo(dir * (38 + o), -26); x.stroke();
     x.fillStyle = "#c9a227"; x.beginPath(); x.arc(dir * 7, -22, 9, 0, 7); x.fill();
-  } else {
+  } else if (type === "giant") {
     x.strokeStyle = "#8a5a2b"; x.lineWidth = 5 / k; x.beginPath();
     x.moveTo(dir * 11, -24); x.lineTo(dir * (atk > 0 ? 24 : 18), atk > 0 ? -4 : -50); x.stroke();
+  } else {
+    x.strokeStyle = "#a76"; x.beginPath(); x.moveTo(dir * 11, -24); x.lineTo(dir * 22, atk ? -8 : -40); x.stroke();
   }
   x.restore();
 }
 function statue(cx, col, hp, mx) {
-  x.fillStyle = "#777"; x.fillRect(cx - 24, G - 12, 48, 12);
-  x.fillStyle = col; x.fillRect(cx - 14, G - 100, 28, 90);
-  x.fillStyle = "#bbb"; x.beginPath(); x.arc(cx, G - 112, 12, 0, 7); x.fill();
-  bar(cx - 26, G - 135, 52, hp / mx);
+  x.fillStyle = "#6c6c74"; x.fillRect(cx - 34, G - 16, 68, 16);
+  x.fillStyle = "#85858f"; x.fillRect(cx - 24, G - 30, 48, 14);
+  x.fillStyle = col; x.fillRect(cx - 16, G - 108, 32, 78);
+  x.fillStyle = "#c4c4cc"; x.beginPath(); x.arc(cx, G - 122, 14, 0, 7); x.fill();
+  x.fillStyle = col; x.fillRect(cx - 24, G - 100, 8, 40); x.fillRect(cx + 16, G - 100, 8, 40);
+  bar(cx - 30, G - 150, 60, hp / mx);
 }
-function scene() {
-  const g = x.createLinearGradient(0, 0, 0, G);
-  g.addColorStop(0, "#6fb0ff"); g.addColorStop(1, "#f0e6d0");
-  x.fillStyle = g; x.fillRect(0, 0, 800, G);
-  x.fillStyle = "#fff"; x.globalAlpha = .7;
-  for (let i = 0; i < 4; i++) {
-    const cx = ((clock * 8 + i * 230) % 1000) - 100;
-    x.beginPath(); x.arc(cx, 60 + i * 22, 22, 0, 7); x.arc(cx + 26, 66 + i * 22, 18, 0, 7); x.arc(cx - 24, 68 + i * 22, 16, 0, 7); x.fill();
+function mtn(off, base, col, step, hgt) {
+  x.fillStyle = col; x.beginPath(); x.moveTo(0, G);
+  for (let i = -1; i < 800 / step + 2; i++) {
+    const wx = i * step - (off % (step * 2)), up = (Math.floor((off + wx) / step) % 2 === 0);
+    x.lineTo(wx, G - (up ? hgt : hgt * .35) - base);
   }
-  x.globalAlpha = 1;
-  x.fillStyle = "#9db4c9"; x.beginPath(); x.moveTo(0, G);
-  [[150, 190], [300, G], [450, 220], [620, G], [720, 200], [800, G]].forEach(p => x.lineTo(p[0], p[1]));
-  x.fill();
+  x.lineTo(900, G); x.fill();
+}
+function scene(cam) {
+  const g = x.createLinearGradient(0, 0, 0, G);
+  g.addColorStop(0, "#5a8fd8"); g.addColorStop(1, "#f6dcb0");
+  x.fillStyle = g; x.fillRect(0, 0, 800, G);
+  x.fillStyle = "#fff6c8"; x.beginPath(); x.arc(620, 70, 28, 0, 7); x.fill();
+  x.fillStyle = "rgba(255,255,255,.65)";
+  for (let i = 0; i < 4; i++) {
+    const cx = ((clock * 9 + i * 260) % 1000) - 100;
+    x.beginPath(); x.arc(cx, 55 + i * 22, 22, 0, 7); x.arc(cx + 26, 60 + i * 22, 18, 0, 7); x.arc(cx - 24, 62 + i * 22, 16, 0, 7); x.fill();
+  }
+  mtn(cam * .15, 0, "#8aa2bd", 140, 130);
+  mtn(cam * .4, 0, "#5f7a59", 90, 60);
   x.fillStyle = "#6b5a45"; x.fillRect(0, G, 800, 70);
   x.fillStyle = "#4f8a3a"; x.fillRect(0, G, 800, 8);
 }
 function demo() {
-  scene(); statue(40, "#3b6df0", 1, 1); statue(760, "#d9402b", 1, 1);
-  const types = ["sword", "spear", "archer", "giant", "sword", "spear"];
-  types.forEach((t, i) => {
-    const a = ((clock * 35 + i * 130) % 700) + 70, b = 800 - (((clock * 35 + i * 150) % 700) + 70);
-    stick(a, "#2a4fc0", clock * 8 + i, t, 0, 1);
-    stick(b, "#d9402b", clock * 8 + i, types[(i + 2) % 6], 0, -1);
+  scene(0); x.save(); statue(60, "#3b6df0", 1, 1); statue(740, "#d9402b", 1, 1);
+  const ty = ["sword", "spear", "archer", "giant", "sword", "spear"];
+  ty.forEach((t, i) => {
+    stick(((clock * 35 + i * 130) % 600) + 100, "#2a4fc0", clock * 8 + i, t, 0, 1);
+    stick(700 - ((clock * 35 + i * 150) % 600), "#d9402b", clock * 8 + i, ty[(i + 2) % 6], 0, -1);
   });
+  x.restore();
 }
 function draw() {
   if (!S) return demo();
+  scene(S.cam);
   x.save();
-  if (S.shake > 0) x.translate((Math.random() - .5) * 6, (Math.random() - .5) * 6);
-  scene();
-  statue(40, "#3b6df0", S.hp[0], S.mx[0]);
-  statue(760, "#d9402b", S.hp[1], S.mx[1]);
-  x.fillStyle = "#f3c623";
-  [[0, 0], [14, 0], [-12, 0]].forEach(p => { x.beginPath(); x.arc(225 + p[0], G - 2, 9, Math.PI, 0); x.fill(); });
-  for (let i = 0; i < S.miners; i++) {
-    const mx = 100 + i * 14, sw = Math.sin(S.t * 6 + i) * 8;
-    x.strokeStyle = "#2a4fc0"; x.lineWidth = 3;
-    x.beginPath(); x.arc(mx, G - 36, 6, 0, 7); x.stroke();
-    x.beginPath(); x.moveTo(mx, G - 30); x.lineTo(mx, G - 13); x.lineTo(mx - 4, G);
-    x.moveTo(mx, G - 13); x.lineTo(mx + 4, G); x.moveTo(mx, G - 26); x.lineTo(mx + 10, G - 30 + sw * .5); x.stroke();
+  x.translate(-S.cam + (S.shake > 0 ? (Math.random() - .5) * 6 : 0), 0);
+  statue(PS, "#3b6df0", S.hp[0], S.mx[0]);
+  statue(ES, "#d9402b", S.hp[1], S.mx[1]);
+  x.fillStyle = S.mine > 0 ? "#f3c623" : "#777";
+  [[0, 0], [16, 0], [-14, 2], [4, -9]].forEach(p => { x.beginPath(); x.arc(PM + 30 + p[0], G - 2 + p[1], 9, Math.PI, 0); x.fill(); });
+  x.fillStyle = "#fff"; x.font = "bold 12px system-ui"; x.textAlign = "center";
+  x.fillText("Kon: " + S.mine, PM + 30, G - 28); x.textAlign = "left";
+  for (const d of S.dead) {
+    const dir = d.team ? -1 : 1;
+    x.save(); x.globalAlpha = clamp(d.k, 0, 1);
+    x.translate(d.x, G); x.rotate(-dir * (1.2 - d.k) * 1.3); x.translate(-d.x, -G);
+    stick(d.x, d.team ? "#d9402b" : "#2a4fc0", 0, d.t, 0, dir); x.restore();
   }
-  for (const u of S.units) {
-    stick(u.x, u.team ? "#d9402b" : "#2a4fc0", u.ph, u.type, u.atk, u.team ? -1 : 1);
-    if (u.hp < u.mx) bar(u.x - 10, G - (u.type === "giant" ? 82 : 50), 20, u.hp / u.mx);
+  for (const u of S.u) {
+    const dir = u.team ? -1 : u.t === "miner" ? (u.st === 2 ? -1 : 1) : 1;
+    const atk = u.t === "miner" ? (u.st === 1 && Math.sin(S.t * 10) > 0 ? 1 : 0) : u.atk;
+    stick(u.x, u.team ? "#d9402b" : "#2a4fc0", u.ph, u.t, atk, dir, u.carry);
+    if (u.hp < u.mx) bar(u.x - 10, G - (u.t === "giant" ? 85 : 52), 20, u.hp / u.mx);
   }
   x.strokeStyle = "#fff"; x.lineWidth = 2;
-  for (const f of S.fx) { x.beginPath(); x.moveTo(f.x1, G - 24); x.lineTo(f.x2, G - 24); x.stroke(); }
+  for (const a of S.ar) { x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(a.x - a.vx * .03, a.y - a.vy * .03); x.stroke(); }
   for (const p of S.pt) { x.fillStyle = p.c; x.fillRect(p.x, p.y, 3, 3); }
-  if (S.rainT > 0) {
-    x.strokeStyle = "#fff8"; x.lineWidth = 2;
-    for (let i = 0; i < 45; i++) {
-      const rx = (i * 83 + S.t * 500) % 800, ry = ((i * 47) + (1 - S.rainT) * 900) % G;
-      x.beginPath(); x.moveTo(rx, ry); x.lineTo(rx - 8, ry + 24); x.stroke();
-    }
-  }
+  x.restore();
+  x.fillStyle = "rgba(0,0,0,.35)"; x.fillRect(100, 8, 600, 8);
+  for (const u of S.u) { x.fillStyle = u.team ? "#e0492f" : "#4a6cf0"; x.fillRect(100 + u.x / W * 600 - 1, 8, 3, 8); }
+  x.strokeStyle = "#fff"; x.lineWidth = 1.5; x.strokeRect(100 + S.cam / W * 600, 7, 800 / W * 600, 10);
   if (S.banner > 0) {
-    x.globalAlpha = Math.min(1, S.banner); x.fillStyle = "#000a"; x.fillRect(0, 150, 800, 70);
+    x.globalAlpha = Math.min(1, S.banner); x.fillStyle = "rgba(0,0,0,.6)"; x.fillRect(0, 150, 800, 70);
     x.fillStyle = "#fff"; x.font = "bold 32px system-ui"; x.textAlign = "center";
     x.fillText((LV[lvl].endless ? "" : "Daraja " + (lvl + 1) + ": ") + LV[lvl].n, 400, 195); x.globalAlpha = 1; x.textAlign = "left";
   }
-  x.restore();
 }
 
 /* ---------- interfeys ---------- */
 const VIEWS = { menu: "menu", levels: "levels", shop: "shopv", how: "howto", end: "end", ach: "achv", set: "setv" };
-let resetArm = false;
 function show(n) {
   resetArm = false;
   if (n !== "end") screen = "menu";
   Object.values(VIEWS).forEach(id => $(id).classList.add("hide"));
   $(VIEWS[n]).classList.remove("hide");
-  if (n === "menu") {
-    renderMenu();
-    $("resume").style.display = (S && !S.over) ? "" : "none";
-  }
+  if (n === "menu") { renderMenu(); $("resume").style.display = (S && !S.over) ? "" : "none"; }
   if (n === "levels") renderLevels();
   if (n === "shop") renderShop();
   if (n === "ach") renderAch();
@@ -375,7 +390,6 @@ function show(n) {
 }
 function hideAll() { Object.values(VIEWS).forEach(id => $(id).classList.add("hide")); }
 function play(l) { newGame(l); screen = "play"; hideAll(); }
-
 function today() { return new Date().toISOString().slice(0, 10); }
 function rankName() {
   const w = D.wins;
@@ -384,11 +398,11 @@ function rankName() {
 function achList() {
   const ups = UP.reduce((a, u) => a + D[u.k], 0);
   return [
-    { n: "Birinchi qon", d: "1 ta g'alaba qozoning", ok: D.wins >= 1 },
+    { n: "Birinchi qon", d: "1 ta g'alaba", ok: D.wins >= 1 },
     { n: "G'olib", d: "5 ta g'alaba", ok: D.wins >= 5 },
     { n: "Qirg'inchi", d: "Jami 100 dushman", ok: D.kills >= 100 },
-    { n: "Chidamli", d: "Cheksiz rejimda 120 soniya", ok: D.best >= 120 },
-    { n: "Boy jangchi", d: "5 ta kuchaytirish sotib oling", ok: ups >= 5 },
+    { n: "Chidamli", d: "Cheksizda 120 soniya", ok: D.best >= 120 },
+    { n: "Boy jangchi", d: "5 ta kuchaytirish", ok: ups >= 5 },
     { n: "Qal'aga yetdingiz", d: "5-darajani oching", ok: D.prog >= 5 }
   ];
 }
@@ -419,8 +433,7 @@ function renderSet() {
 function renderLevels() {
   $("lvgrid").innerHTML = "";
   LV.slice(0, 5).forEach((l, i) => {
-    const d = document.createElement("div"); d.className = "card";
-    const ok = i < D.prog;
+    const d = document.createElement("div"); d.className = "card", ok = i < D.prog;
     d.innerHTML = "<span><b>Daraja " + (i + 1) + "</b><br>" + l.n + "</span>";
     const b = document.createElement("button");
     b.textContent = ok ? "▶ O'ynash" : "🔒"; b.disabled = !ok; b.onclick = () => play(i);
@@ -441,7 +454,9 @@ function renderShop() {
 
 $("camp").onclick = () => show("levels");
 $("endl").onclick = () => play(5);
+$("shop").onclick = () => show("shop");
 $("ach").onclick = () => show("ach");
+$("how").onclick = () => show("how");
 $("setb").onclick = () => show("set");
 $("gift").onclick = () => {
   if (D.daily !== today()) { D.daily = today(); D.coins += 50; save(); buzz("medium"); }
@@ -452,8 +467,6 @@ $("resetb").onclick = () => {
   if (!resetArm) { resetArm = true; renderSet(); return; }
   D = Object.assign({}, DEF); save(); resetArm = false; renderSet();
 };
-$("shop").onclick = () => show("shop");
-$("how").onclick = () => show("how");
 $("resume").onclick = () => { screen = "play"; hideAll(); };
 $("next").onclick = () => play(lvl + 1);
 $("again").onclick = () => play(lvl);
@@ -465,8 +478,15 @@ $("bs").onclick = () => buy("sword");
 $("ba").onclick = () => buy("archer");
 $("bp").onclick = () => buy("spear");
 $("bg").onclick = () => buy("giant");
-$("brain").onclick = rain;
-$("bmode").onclick = () => { if (S && screen === "play") S.mode ^= 1; };
+[0, 1, 2].forEach(i => $("s" + i).onclick = () => { if (S) S.stance = i; });
+$("cc").onclick = () => { if (S) S.idle = 99; };
+cv.addEventListener("pointerdown", e => { drag = e.clientX; });
+cv.addEventListener("pointermove", e => {
+  if (drag === null || !S || screen !== "play") return;
+  const r = cv.getBoundingClientRect();
+  S.cam = clamp(S.cam - (e.clientX - drag) * 800 / r.width, 0, W - 800); drag = e.clientX; S.idle = 0;
+});
+["pointerup", "pointerleave", "pointercancel"].forEach(ev => cv.addEventListener(ev, () => { drag = null; }));
 
 function loop(t) {
   const dt = Math.min(.05, (t - last) / 1000); last = t; clock += dt;
@@ -474,13 +494,10 @@ function loop(t) {
     update(dt);
     const p = pop();
     $("gold").textContent = Math.floor(S.gold);
-    $("info").textContent = "⏱" + Math.floor(S.t) + "s  👥" + p + "/30";
-    $("bm").disabled = S.gold < 150 || S.miners >= 8;
-    [["bs", "sword"], ["ba", "archer"], ["bp", "spear"], ["bg", "giant"]].forEach(a =>
-      $(a[0]).disabled = S.gold < T[a[1]].cost || p + T[a[1]].pop > 30);
-    $("bmode").textContent = S.mode ? "⚔ Hujum qilish" : "🛡 Mudofaada turish";
-    $("brain").textContent = S.rain > 0 ? "🌧 " + Math.ceil(S.rain) + "s" : "🌧 Yomg'ir";
-    $("brain").disabled = S.rain > 0;
+    $("info").textContent = "⏱" + Math.floor(S.t) + "s 👥" + p + "/30 ⏳" + S.q.length;
+    [["bm", "miner"], ["bs", "sword"], ["ba", "archer"], ["bp", "spear"], ["bg", "giant"]].forEach(a =>
+      $(a[0]).disabled = S.gold < T[a[1]].cost || p + T[a[1]].pop > 30 || S.q.length >= 6);
+    [0, 1, 2].forEach(i => $("s" + i).className = "m" + (S.stance === i ? " on" : ""));
   }
   draw();
   requestAnimationFrame(loop);
