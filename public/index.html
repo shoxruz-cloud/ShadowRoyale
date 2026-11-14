@@ -42,6 +42,22 @@ h2{margin:0;font-size:24px}
 .tile b{font-size:24px}
 .tile small{font-size:11px;font-weight:400;color:#d5dae6}
 .tile.big{grid-column:1/3;background:linear-gradient(rgba(232,97,63,.8),rgba(185,47,28,.8))}
+@media (orientation:landscape) and (max-height:540px){
+#app{max-width:none;padding:4px;height:100vh;display:flex;justify-content:center;align-items:center}
+canvas{height:calc(100vh - 8px);width:auto;max-width:100%}
+.bar{position:absolute;top:10px;left:14px;right:14px;margin:0;z-index:3;font-size:12px;text-shadow:0 1px 3px #000;pointer-events:none}
+.bar button{pointer-events:auto}
+canvas+.row{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;margin:0;z-index:3;gap:4px}
+.row+.row{position:absolute;right:12px;bottom:66px;margin:0;z-index:3;flex-direction:column;width:78px;gap:4px}
+.u{padding:3px 6px;font-size:10px;min-width:56px;background:rgba(38,48,74,.88)}
+.u b{font-size:16px}
+.m{font-size:11px;padding:6px 4px;background:rgba(51,56,74,.88)}
+.m.on{background:#e0492f}
+.tiles{grid-template-columns:repeat(4,1fr);max-width:720px}
+.tile.big{grid-column:1/5}
+.hdr{max-width:720px}
+#menu h1{font-size:22px}
+}
 </style>
 </head>
 <body>
@@ -62,6 +78,7 @@ h2{margin:0;font-size:24px}
     <button class="m" id="cc">🎯</button>
   </div>
 
+  <div class="ov hide" id="rot" style="z-index:9;background:#0f1117"><div style="font-size:60px">📱↻</div><h2>Telefonni yonbosh qiling</h2><p class="sub">Shadow Royale yonboshdan o'ynaladi. Agar aylanmasa, telefoningizda "Avto-aylantirish"ni yoqing.</p></div>
   <div class="ov" id="menu">
     <div class="glass hdr"><div><b id="uname">Jangchi</b><br><span class="mut" id="rank"></span></div><div class="pill" id="stats"></div></div>
     <h1>SHADOW ROYALE</h1>
@@ -389,7 +406,11 @@ function show(n) {
   if (n === "set") renderSet();
 }
 function hideAll() { Object.values(VIEWS).forEach(id => $(id).classList.add("hide")); }
-function play(l) { newGame(l); screen = "play"; hideAll(); }
+let oLock = false;
+function play(l) {
+  newGame(l); screen = "play"; hideAll();
+  try { tg && tg.requestFullscreen && tg.requestFullscreen(); } catch {}
+}
 function today() { return new Date().toISOString().slice(0, 10); }
 function rankName() {
   const w = D.wins;
@@ -490,8 +511,12 @@ cv.addEventListener("pointermove", e => {
 
 function loop(t) {
   const dt = Math.min(.05, (t - last) / 1000); last = t; clock += dt;
+  const land = innerWidth > innerHeight, blk = screen === "play" && !land;
+  $("rot").classList.toggle("hide", !blk);
+  if (screen === "play" && land && !oLock) { oLock = true; try { tg && tg.lockOrientation && tg.lockOrientation(); } catch {} }
+  if (screen !== "play" && oLock) { oLock = false; try { tg && tg.unlockOrientation && tg.unlockOrientation(); tg && tg.exitFullscreen && tg.exitFullscreen(); } catch {} }
   if (screen === "play") {
-    update(dt);
+    if (!blk) update(dt);
     const p = pop();
     $("gold").textContent = Math.floor(S.gold);
     $("info").textContent = "⏱" + Math.floor(S.t) + "s 👥" + p + "/30 ⏳" + S.q.length;
