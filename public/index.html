@@ -1,673 +1,172 @@
-<!DOCTYPE html>
-<html lang="uz">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Shadow Royale</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-html,body{margin:0;background:#0f1117;color:#fff;font-family:system-ui,sans-serif}
-#app{position:relative;max-width:820px;margin:0 auto;padding:8px}
-canvas{width:100%;display:block;border-radius:12px;touch-action:none}
-.bar{display:flex;justify-content:space-between;align-items:center;margin:2px 2px 8px;font-weight:700;font-size:14px}
-.row{display:flex;gap:6px;margin-top:6px}
-button{font:inherit;border:0;border-radius:12px;color:#fff;background:#3b6df0;padding:10px 6px}
-button:active{transform:scale(.96)}
-button:disabled{opacity:.35}
-.u{flex:1;font-size:11px;line-height:1.25;background:#26304a;border:1px solid #3b4a75}
-.u b{display:block;font-size:20px}
-.m{flex:1;font-size:13px;background:#33384a}
-.m.on{background:#e0492f}
-.sec{background:#2a2f3d}
-.ov{position:fixed;inset:8px;max-width:804px;margin:0 auto;border-radius:12px;background:rgba(10,12,18,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:14px;overflow:auto;z-index:5}
-.ov.hide{display:none}
-#menu{background:rgba(10,12,18,.2);justify-content:flex-start;padding-top:12px}
-h1{margin:0;font-size:30px;letter-spacing:3px;background:linear-gradient(#fff,#f3b53a 60%,#d9402b);-webkit-background-clip:text;color:transparent}
-h2{margin:0;font-size:24px}
-.sub{color:#c8cdd8;font-size:14px;margin:0;max-width:430px;line-height:1.5}
-.ov>button{width:250px;font-size:17px;padding:13px}
-.ov>button.wide{width:100%;max-width:440px}
-.big{background:linear-gradient(#e8613f,#b92f1c)}
-.grid{display:grid;gap:8px;width:100%;max-width:420px}
-.card{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#1b2030;border:1px solid #333b55;border-radius:12px;padding:10px;text-align:left;font-size:14px}
-.card.done{border-color:#4c4}
-.card button{padding:8px 12px;font-size:14px;white-space:nowrap}
-.pill{background:#1b2030;border:1px solid #333b55;border-radius:20px;padding:5px 12px;font-size:14px}
-.glass,.tile{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:14px}
-.hdr{width:100%;max-width:440px;display:flex;justify-content:space-between;align-items:center;padding:8px 12px;text-align:left}
-.mut{color:#d5dae6;font-size:12px}
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:440px}
-.tile{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;font-size:14px;font-weight:600}
-.tile b{font-size:24px}
-.tile small{font-size:11px;font-weight:400;color:#d5dae6}
-.tile.big{grid-column:1/3;background:linear-gradient(rgba(232,97,63,.8),rgba(185,47,28,.8))}
-@media (orientation:landscape) and (max-height:540px){
-#app{max-width:none;padding:4px;height:100vh;display:flex;justify-content:center;align-items:center}
-canvas{height:calc(100vh - 8px);width:auto;max-width:100%}
-.bar{position:absolute;top:10px;left:14px;right:14px;margin:0;z-index:3;font-size:12px;text-shadow:0 1px 3px #000;pointer-events:none}
-.bar button{pointer-events:auto}
-canvas+.row{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;margin:0;z-index:3;gap:4px}
-.row+.row{position:absolute;right:12px;bottom:66px;margin:0;z-index:3;flex-direction:column;width:78px;gap:4px}
-.u{padding:3px 6px;font-size:10px;min-width:56px;background:rgba(38,48,74,.88)}
-.u b{font-size:16px}
-.m{font-size:11px;padding:6px 4px;background:rgba(51,56,74,.88)}
-.m.on{background:#e0492f}
-.tiles{grid-template-columns:repeat(4,1fr);max-width:720px}
-.tile.big{grid-column:1/5}
-.hdr{max-width:720px}
-#menu h1{font-size:22px}
+try { process.loadEnvFile(); } catch {}
+const express = require("express");
+const crypto = require("crypto");
+const fs = require("fs");
+const TG = require("node-telegram-bot-api");
+const TelegramBot = TG.default || TG;
+
+const { BOT_TOKEN, WEBAPP_URL, PORT = 3000 } = process.env;
+if (!BOT_TOKEN || !WEBAPP_URL) {
+  console.error("BOT_TOKEN va WEBAPP_URL kiriting!");
+  process.exit(1);
 }
-#menu{inset:0;max-width:none;border-radius:0;padding:0;background:#3b6ee0;backdrop-filter:none;-webkit-backdrop-filter:none;display:block;overflow:hidden;z-index:6}
-#mc{position:absolute;inset:0;width:100%;height:100%}
-.mtop{position:absolute;top:10px;left:12px;z-index:2}
-.mw{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:46%;min-width:300px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2}
-.logo{font:900 italic 46px/.95 Impact,'Arial Black',sans-serif;color:#fff;-webkit-text-stroke:3px #000;paint-order:stroke fill;text-shadow:0 5px 0 #000;text-align:center;letter-spacing:2px}
-.logo span{color:#ff4a3a}
-.lsub{color:#000;font-weight:800;letter-spacing:5px;font-size:11px}
-.play{width:70%;font:900 32px Impact,'Arial Black',sans-serif;color:#fff;background:linear-gradient(#ff5a4a,#c9201a);border:3px solid #5a0c08;border-radius:14px;box-shadow:inset 0 -6px 0 rgba(0,0,0,.28),0 4px 0 #3a0605;text-shadow:0 3px 0 #700;padding:8px}
-.mrow{display:flex;gap:6px;width:100%}
-.mb{flex:1;font:900 11px Impact,'Arial Black',sans-serif;color:#fff;border:2px solid rgba(0,0,0,.7);border-radius:8px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.28);text-shadow:0 2px 0 rgba(0,0,0,.6);padding:8px 2px;line-height:1.2}
-.mb small{display:block;font:700 9px system-ui}
-.mb.o{background:linear-gradient(#ff9a3c,#d9611a)}
-.mb.y{background:linear-gradient(#ffe14a,#d1a413)}
-.mb.g{background:linear-gradient(#4cd964,#1f9a35)}
-.mb.p{background:linear-gradient(#c04cf0,#7a1fb5)}
-.mcir{position:absolute;right:14px;bottom:12px;display:flex;gap:10px;z-index:2}
-.cir{width:54px;height:54px;border-radius:50%;background:rgba(10,30,20,.85);font-size:24px;padding:0;position:relative}
-.cir small{position:absolute;right:-2px;top:-2px;background:#e0492f;border-radius:10px;font-size:10px;padding:1px 5px}
-@media (orientation:portrait){.mw{right:50%;transform:translate(50%,-50%);width:92%;top:40%}}
-</style>
-</head>
-<body>
-<div id="app">
-  <div class="bar"><span>💰 <b id="gold">0</b></span><span id="info"></span><button id="pause" class="sec" style="padding:5px 14px">☰</button></div>
-  <canvas id="c" width="800" height="400"></canvas>
-  <div class="row">
-    <button class="u" id="bm"><b>⛏</b>Konchi 150</button>
-    <button class="u" id="bs"><b>⚔</b>Qilich 125</button>
-    <button class="u" id="ba"><b>🏹</b>Kamon 300</button>
-    <button class="u" id="bp"><b>🛡</b>Nayza 400</button>
-    <button class="u" id="bg"><b>🗿</b>Gigant 900</button>
-  </div>
-  <div class="row">
-    <button class="m" id="s0">🏰 Himoya</button>
-    <button class="m" id="s1">🛡 Oldinda</button>
-    <button class="m" id="s2">⚔ Hujum</button>
-    <button class="m" id="cc">🎯</button>
-  </div>
 
-  <div class="ov hide" id="rot" style="z-index:9;background:#0f1117"><div style="font-size:60px">📱↻</div><h2>Telefonni yonbosh qiling</h2><p class="sub">Shadow Royale yonboshdan o'ynaladi. Agar aylanmasa, telefoningizda "Avto-aylantirish"ni yoqing.</p></div>
-  <div class="ov" id="menu">
-    <canvas id="mc"></canvas>
-    <div class="mtop"><div class="pill"><b id="uname">Jangchi</b> · <span id="rank"></span> · <span id="stats"></span></div></div>
-    <div class="mw">
-      <div class="logo">SHADOW<br><span>ROYALE</span></div>
-      <div class="lsub">J A N G &nbsp; M A Y D O N I</div>
-      <button id="camp" class="play">O'YNASH</button>
-      <div class="lsub" id="campsub" style="letter-spacing:1px"></div>
-      <div class="mrow">
-        <button id="gift" class="mb o">🎁 SOVG'A<small id="giftsub"></small></button>
-        <button id="how" class="mb y">📖 QO'LLANMA</button>
-        <button id="endl" class="mb g">♾ CHEKSIZ<small id="bestsub"></small></button>
-        <button id="shop" class="mb p">🏪 DO'KON</button>
-      </div>
-      <button id="resume" class="mb y" style="display:none;flex:none;width:60%;font-size:14px">▶ DAVOM ETISH</button>
-    </div>
-    <div class="mcir">
-      <button id="ach" class="cir">🏆<small id="achsub"></small></button>
-      <button id="musc" class="cir">🔊</button>
-      <button id="setb" class="cir">⚙</button>
-    </div>
-  </div>
+const MAX_TPS = 15; // bir soniyada ruxsat etilgan maksimal bosish (avto-kliker himoyasi)
+const DB_FILE = "db.json";
 
-  <div class="ov hide" id="levels"><h2>⚔ Kampaniya</h2><div class="grid" id="lvgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
-  <div class="ov hide" id="shopv"><h2>🏪 Do'kon</h2><div class="pill">🪙 Tangalar: <b id="coins"></b></div><div class="grid" id="shgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
-  <div class="ov hide" id="achv"><h2>🏅 Yutuqlar</h2><div class="pill" id="achstat"></div><div class="grid" id="achgrid"></div><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
-  <div class="ov hide" id="setv"><h2>⚙ Sozlamalar</h2><button id="vibb" class="sec"></button><button id="musb" class="sec"></button><button id="resetb" class="sec"></button><button class="sec" onclick="show('menu')">⬅ Orqaga</button></div>
-  <div class="ov hide" id="howto">
-    <h2>📖 Qo'llanma</h2>
-    <p class="sub">👆 Jang maydonini <b>barmoq bilan suring</b>. 🎯 tugmasi armiyangizga qaytaradi.<br><br>⛏ Konchilar oltin konigacha yurib, haykalga olib keladi.<br>⚔ Qilich, 🏹 kamon, 🛡 nayza, 🗿 gigant navbat bilan tayyorlanadi.<br><br>🏰 <b>Himoya</b>: haykal yonida turadi<br>🛡 <b>Oldinda</b>: maydon o'rtasida kutadi<br>⚔ <b>Hujum</b>: dushman haykaliga yuradi<br><br>Dushman haykalini yo'q qiling!</p>
-    <button class="sec" onclick="show('menu')">⬅ Orqaga</button>
-  </div>
-  <div class="ov hide" id="end">
-    <h1 id="etitle" style="font-size:28px"></h1>
-    <p class="sub" id="etext"></p>
-    <button id="next" class="big">▶ Keyingi daraja</button>
-    <button id="again">🔁 Qayta o'ynash</button>
-    <button id="eshop" class="sec">🏪 Do'kon</button>
-    <button id="tomenu" class="sec">🏠 Menyu</button>
-  </div>
-</div>
-
-<script>
-const tg = window.Telegram && Telegram.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
-const $ = id => document.getElementById(id), cv = $("c"), x = cv.getContext("2d");
-const W = 2400, G = 330, PS = 130, ES = 2270, PM = 370;
-const T = {
-  miner:  { hp: 40,  cost: 150, pop: 1, tr: 2 },
-  sword:  { hp: 110, dmg: 14, rg: 26,  sp: 62, rt: .7,  cost: 125, pop: 1, tr: 2 },
-  archer: { hp: 60,  dmg: 11, rg: 230, sp: 50, rt: 1.3, cost: 300, pop: 1, tr: 3 },
-  spear:  { hp: 260, dmg: 18, rg: 36,  sp: 46, rt: 1,   cost: 400, pop: 2, tr: 4 },
-  giant:  { hp: 900, dmg: 55, rg: 46,  sp: 30, rt: 1.4, cost: 900, pop: 4, tr: 8 }
+// ---------- Oddiy baza (db.json) ----------
+let db = { users: {}, charges: {} };
+try { db = { ...db, ...JSON.parse(fs.readFileSync(DB_FILE, "utf8")) }; } catch {}
+let t;
+const save = () => {
+  clearTimeout(t);
+  t = setTimeout(() => fs.writeFile(DB_FILE, JSON.stringify(db), () => {}), 1000);
 };
-const LV = [
-  { n: "Qishloq",    hp: .7,  sp: 9, a: 60, s: 999, g: 999 },
-  { n: "O'rmon",     hp: .9,  sp: 8, a: 40, s: 80,  g: 999 },
-  { n: "Cho'l",      hp: 1.1, sp: 7, a: 30, s: 60,  g: 130 },
-  { n: "Tog'lar",    hp: 1.3, sp: 6, a: 24, s: 45,  g: 100 },
-  { n: "Qora qal'a", hp: 1.6, sp: 5, a: 18, s: 35,  g: 70 },
-  { n: "Cheksiz",    hp: 1,   sp: 6, a: 25, s: 50,  g: 90, endless: 1 }
-];
-const UP = [
-  { k: "inc",  n: "⛏ Oltin tashish", d: "+15% oltin" },
-  { k: "dmg",  n: "⚔ Zarba kuchi",   d: "+10% zarar" },
-  { k: "hp",   n: "❤ Askar HP",      d: "+10% HP" },
-  { k: "st",   n: "🗿 Haykal HP",     d: "+200 HP" },
-  { k: "gold", n: "💰 Boshlang'ich oltin", d: "+50 oltin" }
-];
-const DEF = { coins: 0, inc: 0, dmg: 0, hp: 0, st: 0, gold: 0, prog: 1, wins: 0, kills: 0, best: 0, daily: "", vib: 1, mus: 1 };
-let D = load(), S = null, screen = "menu", lvl = 0, last = 0, clock = 0, drag = null, resetArm = false;
+const getUser = (id) =>
+  (db.users[id] ||= { name: "Mehmon", score: 0, badge: "", premiumUntil: 0, coinsGranted: 0, skins: [], lastSync: 0 });
 
-function load() { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem("sr") || "{}")); } catch { return { ...DEF }; } }
-function save() { try { localStorage.setItem("sr", JSON.stringify(D)); } catch {} }
-function buzz(t) { try { D.vib && tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred(t || "light"); } catch {} }
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// ---------- Stars mahsulotlari (client bilan bir xil id) ----------
+const ITEMS = {
+  sub30: { title: "Premium 30 kun", stars: 150, days: 30 },
+  sub90: { title: "Premium 90 kun", stars: 400, days: 90 },
+  sub365: { title: "Premium 1 yil", stars: 1400, days: 365 },
+  p500: { title: "500 tanga", stars: 25, coins: 500 },
+  p2500: { title: "2 500 tanga", stars: 100, coins: 2500 },
+  p10000: { title: "10 000 tanga", stars: 300, coins: 10000 },
+  gal: { title: "Galaktika kristali", stars: 99, skin: "galaktika" },
+};
 
-function newGame(l) {
-  lvl = l;
-  const eh = LV[l].endless ? 1e9 : 1500 * LV[l].hp, ph = 1500 + 200 * D.st;
-  S = { gold: 300 + 50 * D.gold, mine: 6000, t: 0, sp: 6, u: [], dead: [], ar: [], pt: [], q: [], over: false,
-        kills: 0, cam: 0, idle: 0, stance: 1, shake: 0, banner: 2.5, hp: [ph, eh], mx: [ph, eh] };
-  add(0, "miner"); add(0, "miner");
-}
-function add(team, type) {
-  const m = team ? LV[lvl].hp * (LV[lvl].endless ? 1 + S.t / 150 : 1) : 1 + .1 * D.hp;
-  S.u.push({ t: type, team, x: team ? ES - 40 : PS + 40, hp: T[type].hp * m, mx: T[type].hp * m,
-             cd: 0, ph: Math.random() * 6, atk: 0, dm: team ? 1 : 1 + .1 * D.dmg, st: 0, mt: 0, carry: 0 });
-}
-function pop() {
-  return S.u.filter(u => !u.team).reduce((a, u) => a + T[u.t].pop, 0) + S.q.reduce((a, q) => a + T[q.t].pop, 0);
-}
-function buy(type) {
-  if (screen !== "play" || S.over) return;
-  const c = T[type];
-  if (S.gold < c.cost || pop() + c.pop > 30 || S.q.length >= 6) return;
-  S.gold -= c.cost; S.q.push({ t: type, rem: c.tr }); buzz();
-}
-function burst(px, py, col, n) {
-  for (let i = 0; i < n; i++) S.pt.push({ x: px, y: py, vx: (Math.random() - .5) * 140, vy: -Math.random() * 120, t: .5, c: col });
-}
-
-function hit(u, tg, st) {
-  if (u.cd > 0) return;
-  u.cd = st.rt; u.atk = .25;
-  if (u.t === "archer") {
-    const dir = Math.sign(tg - u.x) || 1, tt = Math.abs(tg - u.x) / 300;
-    S.ar.push({ x: u.x, y: G - 32, vx: dir * 300, vy: -250 * tt, team: u.team, dm: st.dmg * u.dm });
-  } else {
-    return true;
+function grant(uid, itemId) {
+  const it = ITEMS[itemId];
+  const u = getUser(uid);
+  if (it.days) {
+    u.premiumUntil = Math.max(Date.now(), u.premiumUntil || 0) + it.days * 864e5;
+    if (!u.skins.includes("galaktika")) u.skins.push("galaktika");
   }
-}
-
-function update(dt) {
-  S.t += dt; S.banner -= dt; S.idle += dt; S.shake = Math.max(0, S.shake - dt);
-  if (S.q.length) { S.q[0].rem -= dt; if (S.q[0].rem <= 0) { add(0, S.q[0].t); S.q.shift(); } }
-
-  S.sp -= dt;
-  if (S.sp <= 0) {
-    const L = LV[lvl], pool = ["sword", "sword"];
-    if (S.t > L.a) pool.push("archer", "archer");
-    if (S.t > L.s) pool.push("spear");
-    if (S.t > L.g) pool.push("giant");
-    if (S.u.filter(u => u.team).length < 25) add(1, pool[Math.floor(Math.random() * pool.length)]);
-    S.sp = L.sp * Math.max(.55, 1 - S.t / 500);
-  }
-
-  for (const u of S.u) {
-    const st = T[u.t], opp = 1 - u.team;
-    u.cd -= dt; u.atk = Math.max(0, u.atk - dt);
-    if (u.t === "miner") {
-      if (u.st === 0) {
-        if (Math.abs(u.x - PM) > 6) { u.x += Math.sign(PM - u.x) * 45 * dt; u.ph += dt * 8; }
-        else { u.st = 1; u.mt = 1.4; }
-      } else if (u.st === 1) {
-        u.mt -= dt;
-        if (u.mt <= 0 && S.mine > 0) { const k = Math.min(S.mine, Math.round(14 * (1 + .15 * D.inc))); S.mine -= k; u.carry = k; u.st = 2; }
-      } else {
-        const hx = PS + 40;
-        if (Math.abs(u.x - hx) > 6) { u.x += Math.sign(hx - u.x) * 45 * dt; u.ph += dt * 8; }
-        else { S.gold += u.carry; u.carry = 0; u.st = 0; }
-      }
-      continue;
-    }
-    let tg = null, bd = 1e9;
-    for (const o of S.u) {
-      if (o.team === u.team) continue;
-      const d = Math.abs(o.x - u.x);
-      if (d < bd) { bd = d; tg = o; }
-    }
-    const aggro = Math.max(st.rg, u.team ? 420 : [150, 260, 380][S.stance]);
-    const es = opp ? ES : PS, sd = Math.abs(es - u.x) - 30;
-    if (tg && bd <= aggro) {
-      if (bd <= st.rg) {
-        if (hit(u, tg.x, st)) {
-          tg.hp -= st.dmg * u.dm; burst(tg.x, G - 22, u.team ? "#4a6cf0" : "#e0492f", 4);
-        }
-      } else { u.x += Math.sign(tg.x - u.x) * st.sp * dt; u.ph += dt * 8; }
-    } else if (sd <= st.rg) {
-      if (hit(u, es, st)) { S.hp[opp] -= st.dmg * u.dm; S.shake = .1; burst(es, G - 60, "#bbb", 5); }
-    } else {
-      const goal = u.team ? PS : [PS + 90, 900, ES - 30][S.stance];
-      if (Math.abs(goal - u.x) > 6) { u.x += Math.sign(goal - u.x) * st.sp * dt; u.ph += dt * 8; }
-    }
-  }
-
-  for (const a of S.ar) {
-    a.vy += 500 * dt; a.x += a.vx * dt; a.y += a.vy * dt;
-    for (const o of S.u) {
-      if (o.team !== a.team && Math.abs(o.x - a.x) < 12 && a.y > G - 62) { o.hp -= a.dm; a.y = 999; burst(o.x, G - 25, "#fc6", 3); break; }
-    }
-    const sx = a.team ? PS : ES;
-    if (a.y < 900 && Math.abs(a.x - sx) < 30 && a.y > G - 125) { S.hp[1 - a.team] -= a.dm; a.y = 999; S.shake = .08; }
-    if (a.y > G) a.y = 999;
-  }
-  S.ar = S.ar.filter(a => a.y < 900 && a.x > 0 && a.x < W);
-
-  for (const u of S.u) if (u.hp <= 0) {
-    S.dead.push({ x: u.x, t: u.t, team: u.team, k: 1.2 });
-    burst(u.x, G - 20, u.team ? "#e0492f" : "#4a6cf0", 8);
-    if (u.team) { S.gold += 20; S.kills++; }
-  }
-  S.u = S.u.filter(u => u.hp > 0);
-  S.dead.forEach(d => d.k -= dt); S.dead = S.dead.filter(d => d.k > 0);
-  S.pt.forEach(p => { p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 300 * dt; });
-  S.pt = S.pt.filter(p => p.t > 0);
-
-  if (S.idle > 3) {
-    const mine = S.u.filter(u => !u.team && u.t !== "miner").map(u => u.x);
-    const fx = mine.length ? Math.max(...mine) : PS;
-    S.cam += (clamp(fx - 400, 0, W - 800) - S.cam) * Math.min(1, dt * 1.5);
-  }
-  if (S.hp[1] <= 0) finish(true); else if (S.hp[0] <= 0) finish(false);
-}
-
-function finish(win) {
-  S.over = true; screen = "end";
-  const en = LV[lvl].endless, t = Math.floor(S.t);
-  const coins = en ? 5 + S.kills + Math.floor(t / 10) : win ? 25 * (lvl + 1) + S.kills : 5 + S.kills;
-  D.coins += coins; D.kills += S.kills;
-  let extra = "";
-  if (en && t > D.best) { D.best = t; extra = "<br>🏅 Yangi rekord!"; }
-  if (win) { D.wins++; if (lvl + 2 > D.prog) D.prog = Math.min(5, lvl + 2); }
+  if (it.coins) u.coinsGranted += it.coins;
+  if (it.skin && !u.skins.includes(it.skin)) u.skins.push(it.skin);
   save();
-  $("etitle").textContent = win ? "🏆 G'alaba!" : en ? "⏱ " + t + " soniya chidadingiz" : "💀 Mag'lubiyat";
-  $("etext").innerHTML = (win ? "Dushman haykali vayron bo'ldi!" : "Haykalingiz yiqildi.") +
-    "<br>⏱ " + t + " soniya · 💀 " + S.kills + " dushman<br>🪙 +" + coins + " tanga" + extra;
-  $("next").style.display = (win && lvl < 4) ? "" : "none";
-  show("end");
 }
 
-/* ---------- chizish ---------- */
-function bar(x0, y, w, p) {
-  x.fillStyle = "rgba(0,0,0,.5)"; x.fillRect(x0, y, w, 5);
-  x.fillStyle = p > .5 ? "#4c4" : "#e44"; x.fillRect(x0, y, w * clamp(p, 0, 1), 5);
+// ---------- Telegram initData tekshiruvi ----------
+function verify(initData) {
+  const p = new URLSearchParams(initData);
+  const hash = p.get("hash");
+  if (!hash) return null;
+  p.delete("hash");
+  const str = [...p.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => `${k}=${v}`).join("\n");
+  const secret = crypto.createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
+  const h = crypto.createHmac("sha256", secret).update(str).digest("hex");
+  if (h !== hash) return null;
+  if (Date.now() / 1000 - Number(p.get("auth_date")) > 86400) return null;
+  try { return JSON.parse(p.get("user")); } catch { return null; }
 }
-function stick(px, col, ph, type, atk, dir, carry) {
-  const k = type === "giant" ? 1.7 : 1;
-  x.save(); x.translate(px, G); x.scale(k, k);
-  x.strokeStyle = col; x.fillStyle = col; x.lineWidth = 3 / k; x.lineCap = "round";
-  const sw = Math.sin(ph) * 7;
-  x.beginPath(); x.arc(0, -36, 6, 0, 7); x.fill();
-  x.beginPath();
-  x.moveTo(0, -30); x.lineTo(0, -13);
-  x.moveTo(0, -13); x.lineTo(-sw, 0); x.moveTo(0, -13); x.lineTo(sw, 0);
-  x.moveTo(0, -26); x.lineTo(dir * 11, -24);
-  x.stroke();
-  if (carry) { x.fillStyle = "#f3c623"; x.fillRect(-dir * 9, -30, 7, 9); }
-  if (type === "sword") {
-    x.strokeStyle = "#dde"; x.beginPath(); x.moveTo(dir * 11, -24); x.lineTo(dir * 26, atk > 0 ? -2 : -44); x.stroke();
-  } else if (type === "archer") {
-    x.strokeStyle = "#a76"; x.beginPath();
-    x.arc(dir * 12, -24, 11, dir > 0 ? -1.2 : Math.PI - 1.2, dir > 0 ? 1.2 : Math.PI + 1.2); x.stroke();
-  } else if (type === "spear") {
-    const o = atk > 0 ? 12 : 0;
-    x.strokeStyle = "#dde"; x.beginPath(); x.moveTo(dir * (6 + o), -22); x.lineTo(dir * (38 + o), -26); x.stroke();
-    x.fillStyle = "#c9a227"; x.beginPath(); x.arc(dir * 7, -22, 9, 0, 7); x.fill();
-  } else if (type === "giant") {
-    x.strokeStyle = "#8a5a2b"; x.lineWidth = 5 / k; x.beginPath();
-    x.moveTo(dir * 11, -24); x.lineTo(dir * (atk > 0 ? 24 : 18), atk > 0 ? -4 : -50); x.stroke();
-  } else {
-    x.strokeStyle = "#a76"; x.beginPath(); x.moveTo(dir * 11, -24); x.lineTo(dir * 22, atk ? -8 : -40); x.stroke();
-  }
-  x.restore();
-}
-function statue(cx, col, hp, mx) {
-  x.fillStyle = "#6c6c74"; x.fillRect(cx - 34, G - 16, 68, 16);
-  x.fillStyle = "#85858f"; x.fillRect(cx - 24, G - 30, 48, 14);
-  x.fillStyle = col; x.fillRect(cx - 16, G - 108, 32, 78);
-  x.fillStyle = "#c4c4cc"; x.beginPath(); x.arc(cx, G - 122, 14, 0, 7); x.fill();
-  x.fillStyle = col; x.fillRect(cx - 24, G - 100, 8, 40); x.fillRect(cx + 16, G - 100, 8, 40);
-  bar(cx - 30, G - 150, 60, hp / mx);
-}
-function mtn(off, base, col, step, hgt) {
-  x.fillStyle = col; x.beginPath(); x.moveTo(0, G);
-  for (let i = -1; i < 800 / step + 2; i++) {
-    const wx = i * step - (off % (step * 2)), up = (Math.floor((off + wx) / step) % 2 === 0);
-    x.lineTo(wx, G - (up ? hgt : hgt * .35) - base);
-  }
-  x.lineTo(900, G); x.fill();
-}
-function scene(cam) {
-  const g = x.createLinearGradient(0, 0, 0, G);
-  g.addColorStop(0, "#5a8fd8"); g.addColorStop(1, "#f6dcb0");
-  x.fillStyle = g; x.fillRect(0, 0, 800, G);
-  x.fillStyle = "#fff6c8"; x.beginPath(); x.arc(620, 70, 28, 0, 7); x.fill();
-  x.fillStyle = "rgba(255,255,255,.65)";
-  for (let i = 0; i < 4; i++) {
-    const cx = ((clock * 9 + i * 260) % 1000) - 100;
-    x.beginPath(); x.arc(cx, 55 + i * 22, 22, 0, 7); x.arc(cx + 26, 60 + i * 22, 18, 0, 7); x.arc(cx - 24, 62 + i * 22, 16, 0, 7); x.fill();
-  }
-  mtn(cam * .15, 0, "#8aa2bd", 140, 130);
-  mtn(cam * .4, 0, "#5f7a59", 90, 60);
-  x.fillStyle = "#6b5a45"; x.fillRect(0, G, 800, 70);
-  x.fillStyle = "#4f8a3a"; x.fillRect(0, G, 800, 8);
-}
-function demo() {
-  scene(0); x.save(); statue(60, "#3b6df0", 1, 1); statue(740, "#d9402b", 1, 1);
-  const ty = ["sword", "spear", "archer", "giant", "sword", "spear"];
-  ty.forEach((t, i) => {
-    stick(((clock * 35 + i * 130) % 600) + 100, "#2a4fc0", clock * 8 + i, t, 0, 1);
-    stick(700 - ((clock * 35 + i * 150) % 600), "#d9402b", clock * 8 + i, ty[(i + 2) % 6], 0, -1);
+const auth = (req, res, next) => {
+  const u = verify(req.get("x-init-data") || "");
+  if (!u) return res.status(401).json({ error: "auth" });
+  req.tg = u;
+  next();
+};
+const view = (id, u) => ({
+  id: String(id), score: u.score, premiumUntil: u.premiumUntil,
+  coinsGranted: u.coinsGranted, skins: u.skins,
+});
+
+// ---------- Server ----------
+const app = express();
+app.use(express.json());
+app.use(express.static("public"));
+app.get("/health", (_, res) => res.send("ok"));
+
+app.get("/api/state", auth, (req, res) => {
+  const u = getUser(req.tg.id);
+  u.name = req.tg.first_name || req.tg.username || u.name;
+  save();
+  res.json(view(req.tg.id, u));
+});
+
+app.post("/api/sync", auth, (req, res) => {
+  const u = getUser(req.tg.id);
+  const now = Date.now();
+  const dt = u.lastSync ? Math.min(86400, (now - u.lastSync) / 1000) : 1;
+  const allowed = u.score + Math.ceil(dt * MAX_TPS) + 5;
+  const claimed = Math.floor(Number(req.body.score) || 0);
+  if (claimed > u.score) u.score = Math.min(claimed, allowed);
+  u.lastSync = now;
+  u.name = req.tg.first_name || req.tg.username || u.name;
+  const okBadges = ["prem", "bolt", "rocket", "crown"];
+  u.badge = String(req.body.badge || "")
+    .split(",")
+    .filter((b) => okBadges.includes(b) && (b !== "prem" || u.premiumUntil > now))
+    .slice(0, 2)
+    .join(",");
+  save();
+  res.json(view(req.tg.id, u));
+});
+
+app.get("/api/top", (_, res) => {
+  const top = Object.entries(db.users)
+    .map(([id, u]) => ({ id, name: u.name, score: u.score, badge: u.badge }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+  res.json({ top });
+});
+
+async function tgApi(method, body) {
+  const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
-  x.restore();
-}
-function draw() {
-  if (!S) return demo();
-  scene(S.cam);
-  x.save();
-  x.translate(-S.cam + (S.shake > 0 ? (Math.random() - .5) * 6 : 0), 0);
-  statue(PS, "#3b6df0", S.hp[0], S.mx[0]);
-  statue(ES, "#d9402b", S.hp[1], S.mx[1]);
-  x.fillStyle = S.mine > 0 ? "#f3c623" : "#777";
-  [[0, 0], [16, 0], [-14, 2], [4, -9]].forEach(p => { x.beginPath(); x.arc(PM + 30 + p[0], G - 2 + p[1], 9, Math.PI, 0); x.fill(); });
-  x.fillStyle = "#fff"; x.font = "bold 12px system-ui"; x.textAlign = "center";
-  x.fillText("Kon: " + S.mine, PM + 30, G - 28); x.textAlign = "left";
-  for (const d of S.dead) {
-    const dir = d.team ? -1 : 1;
-    x.save(); x.globalAlpha = clamp(d.k, 0, 1);
-    x.translate(d.x, G); x.rotate(-dir * (1.2 - d.k) * 1.3); x.translate(-d.x, -G);
-    stick(d.x, d.team ? "#d9402b" : "#2a4fc0", 0, d.t, 0, dir); x.restore();
-  }
-  for (const u of S.u) {
-    const dir = u.team ? -1 : u.t === "miner" ? (u.st === 2 ? -1 : 1) : 1;
-    const atk = u.t === "miner" ? (u.st === 1 && Math.sin(S.t * 10) > 0 ? 1 : 0) : u.atk;
-    stick(u.x, u.team ? "#d9402b" : "#2a4fc0", u.ph, u.t, atk, dir, u.carry);
-    if (u.hp < u.mx) bar(u.x - 10, G - (u.t === "giant" ? 85 : 52), 20, u.hp / u.mx);
-  }
-  x.strokeStyle = "#fff"; x.lineWidth = 2;
-  for (const a of S.ar) { x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(a.x - a.vx * .03, a.y - a.vy * .03); x.stroke(); }
-  for (const p of S.pt) { x.fillStyle = p.c; x.fillRect(p.x, p.y, 3, 3); }
-  x.restore();
-  x.fillStyle = "rgba(0,0,0,.35)"; x.fillRect(100, 8, 600, 8);
-  for (const u of S.u) { x.fillStyle = u.team ? "#e0492f" : "#4a6cf0"; x.fillRect(100 + u.x / W * 600 - 1, 8, 3, 8); }
-  x.strokeStyle = "#fff"; x.lineWidth = 1.5; x.strokeRect(100 + S.cam / W * 600, 7, 800 / W * 600, 10);
-  if (S.banner > 0) {
-    x.globalAlpha = Math.min(1, S.banner); x.fillStyle = "rgba(0,0,0,.6)"; x.fillRect(0, 150, 800, 70);
-    x.fillStyle = "#fff"; x.font = "bold 32px system-ui"; x.textAlign = "center";
-    x.fillText((LV[lvl].endless ? "" : "Daraja " + (lvl + 1) + ": ") + LV[lvl].n, 400, 195); x.globalAlpha = 1; x.textAlign = "left";
-  }
+  return r.json();
 }
 
-/* ---------- interfeys ---------- */
-const VIEWS = { menu: "menu", levels: "levels", shop: "shopv", how: "howto", end: "end", ach: "achv", set: "setv" };
-function show(n) {
-  resetArm = false;
-  if (n !== "end") screen = "menu";
-  Object.values(VIEWS).forEach(id => $(id).classList.add("hide"));
-  $(VIEWS[n]).classList.remove("hide");
-  if (n === "menu") { renderMenu(); $("resume").style.display = (S && !S.over) ? "" : "none"; }
-  if (n === "levels") renderLevels();
-  if (n === "shop") renderShop();
-  if (n === "ach") renderAch();
-  if (n === "set") renderSet();
-}
-function hideAll() { Object.values(VIEWS).forEach(id => $(id).classList.add("hide")); }
-let oLock = false;
-function play(l) {
-  newGame(l); screen = "play"; hideAll();
-  try { tg && tg.requestFullscreen && tg.requestFullscreen(); } catch {}
-}
-function today() { return new Date().toISOString().slice(0, 10); }
-function rankName() {
-  const w = D.wins;
-  return w >= 10 ? "Afsona" : w >= 6 ? "Qo'mondon" : w >= 3 ? "Sardor" : w >= 1 ? "Askar" : "Yangi jangchi";
-}
-function achList() {
-  const ups = UP.reduce((a, u) => a + D[u.k], 0);
-  return [
-    { n: "Birinchi qon", d: "1 ta g'alaba", ok: D.wins >= 1 },
-    { n: "G'olib", d: "5 ta g'alaba", ok: D.wins >= 5 },
-    { n: "Qirg'inchi", d: "Jami 100 dushman", ok: D.kills >= 100 },
-    { n: "Chidamli", d: "Cheksizda 120 soniya", ok: D.best >= 120 },
-    { n: "Boy jangchi", d: "5 ta kuchaytirish", ok: ups >= 5 },
-    { n: "Qal'aga yetdingiz", d: "5-darajani oching", ok: D.prog >= 5 }
-  ];
-}
-function renderMenu() {
-  const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
-  $("uname").textContent = u && u.first_name ? u.first_name : "Jangchi";
-  $("rank").textContent = "🎖 " + rankName() + " · 🏆 " + D.wins;
-  $("stats").textContent = "🪙 " + D.coins;
-  $("campsub").textContent = "Daraja " + Math.min(D.prog, 5) + "/5 ochiq";
-  $("bestsub").textContent = D.best ? "Rekord: " + D.best + "s" : "Qancha chidaysiz?";
-  const L = achList();
-  $("achsub").textContent = L.filter(a => a.ok).length + "/" + L.length;
-  $("giftsub").textContent = D.daily === today() ? "Ertaga yana" : "+50 tanga!";
-}
-function renderAch() {
-  $("achstat").textContent = "💀 " + D.kills + " · 🏆 " + D.wins + " · ♾ " + D.best + "s";
-  $("achgrid").innerHTML = "";
-  achList().forEach(a => {
-    const d = document.createElement("div"); d.className = "card" + (a.ok ? " done" : "");
-    d.innerHTML = "<span><b>" + a.n + "</b><br>" + a.d + "</span><span>" + (a.ok ? "✅" : "🔒") + "</span>";
-    $("achgrid").appendChild(d);
+app.post("/api/invoice", auth, async (req, res) => {
+  const it = ITEMS[req.body.item];
+  if (!it) return res.status(400).json({ error: "item" });
+  const r = await tgApi("createInvoiceLink", {
+    title: it.title,
+    description: "Shadow Royale: " + it.title,
+    payload: `${req.tg.id}:${req.body.item}`,
+    currency: "XTR",
+    prices: [{ label: it.title, amount: it.stars }],
   });
-}
-function renderSet() {
-  syncMus();
-  $("vibb").textContent = "📳 Vibratsiya: " + (D.vib ? "yoqiq" : "o'chiq");
-  $("resetb").textContent = resetArm ? "⚠ Yana bosing: hammasi o'chadi" : "🗑 Progressni o'chirish";
-}
-/*MUSIC*/
-let AC = null, MG = null, nextT = 0, stp = 0;
-const CH = [[220, 261.6, 329.6], [174.6, 220, 261.6], [261.6, 329.6, 392], [196, 246.9, 293.7]];
-const BS = [55, 43.65, 65.41, 49], AP = [0, 1, 2, 1, 0, 1, 2, 1];
-function tone(fr, t, d, type, v) {
-  const o = AC.createOscillator(), g = AC.createGain();
-  o.type = type; o.frequency.value = fr;
-  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
-  o.connect(g); g.connect(MG); o.start(t); o.stop(t + d);
-}
-function kick(t) {
-  const o = AC.createOscillator(), g = AC.createGain();
-  o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(40, t + .15);
-  g.gain.setValueAtTime(.9, t); g.gain.exponentialRampToValueAtTime(.001, t + .2);
-  o.connect(g); g.connect(MG); o.start(t); o.stop(t + .25);
-}
-function sched() {
-  if (!AC || !D.mus || AC.state !== "running") return;
-  while (nextT < AC.currentTime + .4) {
-    const bar = Math.floor(stp / 8) % 4, i = stp % 8;
-    tone(CH[bar][AP[i]] * 2, nextT, .3, "triangle", .18);
-    if (i % 4 === 0) { tone(BS[bar], nextT, .5, "sawtooth", .2); kick(nextT); }
-    nextT += .24; stp++;
-  }
-}
-function startMusic() {
-  if (!D.mus) return;
-  try {
-    if (!AC) {
-      AC = new (window.AudioContext || window.webkitAudioContext)();
-      MG = AC.createGain(); MG.gain.value = .3; MG.connect(AC.destination);
-      setInterval(sched, 100);
+  if (!r.ok) return res.status(500).json({ error: r.description });
+  res.json({ link: r.result });
+});
+
+app.listen(PORT, "0.0.0.0", () => console.log("Server port:", PORT));
+
+// ---------- Bot ----------
+const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+
+bot.onText(/\/start/, (msg) => {
+  bot.sendMessage(
+    msg.chat.id,
+    `Salom, ${msg.from.first_name}! 👑\nShadow Royale: eng ko'p bosgan g'olib bo'ladi.\nReytingda birinchi bo'ling!`,
+    {
+      reply_markup: {
+        inline_keyboard: [[{ text: "👑 O'ynash", web_app: { url: WEBAPP_URL } }]],
+      },
     }
-    if (AC.state === "suspended") AC.resume();
-    if (nextT < AC.currentTime) nextT = AC.currentTime + .1;
-  } catch {}
-}
-function syncMus() {
-  $("musc").textContent = D.mus ? "🔊" : "🔇";
-  $("musb").textContent = "🎵 Musiqa: " + (D.mus ? "yoqiq" : "o'chiq");
-}
-/*END*/
-
-const mc = $("mc"), mx = mc.getContext("2d");
-function hero(cx, by, s, k, t) {
-  const b = Math.sin(t * 2 + k) * 5 * s, hy = by - 370 * s + b, c = k ? "#1b1030" : "#14141b";
-  mx.save(); mx.lineCap = "round"; mx.lineJoin = "round"; mx.strokeStyle = c; mx.fillStyle = c;
-  mx.lineWidth = 50 * s; mx.beginPath();
-  mx.moveTo(cx - 30 * s, by); mx.lineTo(cx - 20 * s, by - 150 * s);
-  mx.moveTo(cx + 40 * s, by); mx.lineTo(cx + 25 * s, by - 150 * s); mx.stroke();
-  mx.lineWidth = 90 * s; mx.beginPath(); mx.moveTo(cx, by - 170 * s + b); mx.lineTo(cx, by - 270 * s + b); mx.stroke();
-  mx.lineWidth = 36 * s; mx.beginPath(); mx.moveTo(cx + 30 * s, by - 280 * s + b); mx.lineTo(cx + 110 * s, by - 220 * s + b); mx.stroke();
-  mx.beginPath(); mx.arc(cx, hy, 62 * s, 0, 7); mx.fill();
-  if (k === 0) {
-    mx.fillStyle = "#555766"; mx.beginPath(); mx.arc(cx, hy, 66 * s, Math.PI, 0); mx.fill();
-    mx.strokeStyle = "#cfd2dc"; mx.lineWidth = 14 * s; mx.beginPath();
-    mx.moveTo(cx - 60 * s, hy - 20 * s); mx.quadraticCurveTo(cx - 110 * s, hy - 60 * s, cx - 90 * s, hy - 130 * s);
-    mx.moveTo(cx + 60 * s, hy - 20 * s); mx.quadraticCurveTo(cx + 110 * s, hy - 60 * s, cx + 90 * s, hy - 130 * s); mx.stroke();
-    mx.strokeStyle = "#7a4a22"; mx.lineWidth = 12 * s; mx.beginPath();
-    mx.moveTo(cx + 110 * s, by - 100 * s); mx.lineTo(cx + 110 * s, by - 420 * s + b); mx.stroke();
-    mx.fillStyle = "#b9bfd0"; mx.beginPath(); mx.moveTo(cx + 110 * s, by - 420 * s + b);
-    mx.quadraticCurveTo(cx + 190 * s, by - 430 * s + b, cx + 180 * s, by - 340 * s + b);
-    mx.lineTo(cx + 110 * s, by - 360 * s + b); mx.fill();
-  } else {
-    mx.fillStyle = "#3a1f6e"; mx.beginPath(); mx.moveTo(cx - 85 * s, hy + 45 * s);
-    mx.quadraticCurveTo(cx - 60 * s, hy - 115 * s, cx, hy - 115 * s);
-    mx.quadraticCurveTo(cx + 60 * s, hy - 115 * s, cx + 85 * s, hy + 45 * s); mx.fill();
-    mx.fillStyle = "#0a0614"; mx.beginPath(); mx.arc(cx, hy + 5 * s, 52 * s, 0, 7); mx.fill();
-    mx.strokeStyle = "#8a6a3a"; mx.lineWidth = 10 * s; mx.beginPath();
-    mx.moveTo(cx + 110 * s, by - 60 * s); mx.lineTo(cx + 110 * s, by - 450 * s + b); mx.stroke();
-    mx.strokeStyle = "#dfe6ff"; mx.lineWidth = 12 * s; mx.beginPath();
-    mx.moveTo(cx + 110 * s, by - 450 * s + b); mx.quadraticCurveTo(cx + 30 * s, by - 510 * s + b, cx - 30 * s, by - 430 * s + b); mx.stroke();
-  }
-  mx.shadowBlur = 20 * s; mx.shadowColor = k ? "#3ff" : "#c6f"; mx.fillStyle = k ? "#8ff" : "#e9b0ff";
-  [-1, 1].forEach(d => { mx.beginPath(); mx.ellipse(cx + d * 28 * s, hy - 4 * s, 20 * s, 8 * s, d * -.4, 0, 7); mx.fill(); });
-  mx.restore();
-}
-function drawMenu() {
-  const w = mc.clientWidth, h = mc.clientHeight, t = clock;
-  if (!w || !h) return;
-  if (mc.width !== w || mc.height !== h) { mc.width = w; mc.height = h; }
-  const hz = h * .64, land = w > h;
-  let g = mx.createLinearGradient(0, 0, 0, hz);
-  g.addColorStop(0, "#2a5ad6"); g.addColorStop(.7, "#6e72cc"); g.addColorStop(1, "#d08fa0");
-  mx.fillStyle = g; mx.fillRect(0, 0, w, hz + 2);
-  mx.fillStyle = "rgba(255,255,255,.85)";
-  for (let i = 0; i < 6; i++) {
-    const cx = ((t * (10 + i * 3) + i * w / 5) % (w + 240)) - 120, cy = h * (.08 + (i % 3) * .1), r = h * (.035 + (i % 2) * .015);
-    mx.beginPath(); mx.arc(cx, cy, r, 0, 7); mx.arc(cx + r * 1.3, cy + r * .2, r * .8, 0, 7); mx.arc(cx - r * 1.2, cy + r * .3, r * .7, 0, 7); mx.fill();
-  }
-  mx.fillStyle = "#3a2f7a"; mx.beginPath(); mx.moveTo(0, hz);
-  for (let x = 0; x <= w + 20; x += 20) mx.lineTo(x, hz - h * .07 - Math.abs(Math.sin(x / w * 6)) * h * .08);
-  mx.lineTo(w, hz); mx.fill();
-  g = mx.createLinearGradient(0, hz, 0, h); g.addColorStop(0, "#4fae3a"); g.addColorStop(1, "#1f6a24");
-  mx.fillStyle = g; mx.fillRect(0, hz, w, h - hz);
-  mx.strokeStyle = "#3f9a2e"; mx.lineWidth = 3;
-  for (let x = 0; x < w; x += 9) { mx.beginPath(); mx.moveTo(x, hz + 4); mx.lineTo(x + Math.sin(t * 2.2 + x * .3) * 4, hz - 9); mx.stroke(); }
-  const s = land ? h / 520 : Math.min(w / 800, h / 1100), by = h * 1.0;
-  hero(w * (land ? .15 : .22), by, s, 0, t);
-  hero(w * (land ? .34 : .56), by, s * .92, 1, t);
-}
-
-function renderLevels() {
-  $("lvgrid").innerHTML = "";
-  LV.slice(0, 5).forEach((l, i) => {
-    const d = document.createElement("div"); d.className = "card", ok = i < D.prog;
-    d.innerHTML = "<span><b>Daraja " + (i + 1) + "</b><br>" + l.n + "</span>";
-    const b = document.createElement("button");
-    b.textContent = ok ? "▶ O'ynash" : "🔒"; b.disabled = !ok; b.onclick = () => play(i);
-    d.appendChild(b); $("lvgrid").appendChild(d);
-  });
-}
-function renderShop() {
-  $("coins").textContent = D.coins; $("shgrid").innerHTML = "";
-  UP.forEach(u => {
-    const lv = D[u.k], cost = 40 * (lv + 1), d = document.createElement("div"); d.className = "card";
-    d.innerHTML = "<span><b>" + u.n + "</b> (" + lv + "/5)<br>" + u.d + "</span>";
-    const b = document.createElement("button");
-    b.textContent = lv >= 5 ? "MAX" : "🪙 " + cost; b.disabled = lv >= 5 || D.coins < cost;
-    b.onclick = () => { D.coins -= cost; D[u.k]++; save(); buzz(); renderShop(); };
-    d.appendChild(b); $("shgrid").appendChild(d);
-  });
-}
-
-$("camp").onclick = () => show("levels");
-$("musc").onclick = $("musb").onclick = () => { D.mus = D.mus ? 0 : 1; save(); syncMus(); if (D.mus) startMusic(); };
-document.addEventListener("pointerdown", startMusic);
-document.addEventListener("visibilitychange", () => {
-  if (!AC) return;
-  if (document.hidden) AC.suspend(); else if (D.mus) AC.resume();
+  );
 });
-syncMus();
-$("endl").onclick = () => play(5);
-$("shop").onclick = () => show("shop");
-$("ach").onclick = () => show("ach");
-$("how").onclick = () => show("how");
-$("setb").onclick = () => show("set");
-$("gift").onclick = () => {
-  if (D.daily !== today()) { D.daily = today(); D.coins += 50; save(); buzz("medium"); }
-  renderMenu();
-};
-$("vibb").onclick = () => { D.vib = D.vib ? 0 : 1; save(); renderSet(); };
-$("resetb").onclick = () => {
-  if (!resetArm) { resetArm = true; renderSet(); return; }
-  D = Object.assign({}, DEF); save(); resetArm = false; renderSet();
-};
-$("resume").onclick = () => { screen = "play"; hideAll(); };
-$("next").onclick = () => play(lvl + 1);
-$("again").onclick = () => play(lvl);
-$("eshop").onclick = () => show("shop");
-$("tomenu").onclick = () => { S = null; show("menu"); };
-$("pause").onclick = () => { if (screen === "play") show("menu"); };
-$("bm").onclick = () => buy("miner");
-$("bs").onclick = () => buy("sword");
-$("ba").onclick = () => buy("archer");
-$("bp").onclick = () => buy("spear");
-$("bg").onclick = () => buy("giant");
-[0, 1, 2].forEach(i => $("s" + i).onclick = () => { if (S) S.stance = i; });
-$("cc").onclick = () => { if (S) S.idle = 99; };
-cv.addEventListener("pointerdown", e => { drag = e.clientX; });
-cv.addEventListener("pointermove", e => {
-  if (drag === null || !S || screen !== "play") return;
-  const r = cv.getBoundingClientRect();
-  S.cam = clamp(S.cam - (e.clientX - drag) * 800 / r.width, 0, W - 800); drag = e.clientX; S.idle = 0;
-});
-["pointerup", "pointerleave", "pointercancel"].forEach(ev => cv.addEventListener(ev, () => { drag = null; }));
 
-function loop(t) {
-  const dt = Math.min(.05, (t - last) / 1000); last = t; clock += dt;
-  const land = innerWidth > innerHeight, blk = screen === "play" && !land;
-  $("rot").classList.toggle("hide", !blk);
-  if (screen === "play" && land && !oLock) { oLock = true; try { tg && tg.lockOrientation && tg.lockOrientation(); } catch {} }
-  if (screen !== "play" && oLock) { oLock = false; try { tg && tg.unlockOrientation && tg.unlockOrientation(); tg && tg.exitFullscreen && tg.exitFullscreen(); } catch {} }
-  if (screen === "play") {
-    if (!blk) update(dt);
-    const p = pop();
-    $("gold").textContent = Math.floor(S.gold);
-    $("info").textContent = "⏱" + Math.floor(S.t) + "s 👥" + p + "/30 ⏳" + S.q.length;
-    [["bm", "miner"], ["bs", "sword"], ["ba", "archer"], ["bp", "spear"], ["bg", "giant"]].forEach(a =>
-      $(a[0]).disabled = S.gold < T[a[1]].cost || p + T[a[1]].pop > 30 || S.q.length >= 6);
-    [0, 1, 2].forEach(i => $("s" + i).className = "m" + (S.stance === i ? " on" : ""));
-  }
-  draw();
-  if (!$("menu").classList.contains("hide")) drawMenu();
-  requestAnimationFrame(loop);
-}
-show("menu");
-requestAnimationFrame(loop);
-</script>
-</body>
-</html>
+bot.on("pre_checkout_query", (q) => bot.answerPreCheckoutQuery(q.id, true));
+
+bot.on("message", (msg) => {
+  const p = msg.successful_payment;
+  if (!p) return;
+  const [uid, item] = p.invoice_payload.split(":");
+  if (!ITEMS[item] || db.charges[p.telegram_payment_charge_id]) return;
+  db.charges[p.telegram_payment_charge_id] = 1;
+  grant(uid, item);
+  bot.sendMessage(msg.chat.id, "Rahmat! Xaridingiz o'yinga qo'shildi 👑");
+});
+
+tgApi("setChatMenuButton", {
+  menu_button: { type: "web_app", text: "O'ynash", web_app: { url: WEBAPP_URL } },
+});
+
+console.log("Bot ishga tushdi...");
+
