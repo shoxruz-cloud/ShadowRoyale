@@ -1,172 +1,373 @@
-try { process.loadEnvFile(); } catch {}
-const express = require("express");
-const crypto = require("crypto");
-const fs = require("fs");
-const TG = require("node-telegram-bot-api");
-const TelegramBot = TG.default || TG;
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Shadow Royale</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080510;--bg2:#1c0f3d;--ink:#f4edff;--mute:#a995d8;--cy:#5ef2e0;--mg:#ff4fa3;--gd:#ffd166;--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.14);color-scheme:dark;box-sizing:border-box;padding-top:calc(env(safe-area-inset-top,0px) + var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px));padding-bottom:calc(env(safe-area-inset-bottom,0px) + var(--tg-safe-area-inset-bottom,0px))}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(70% 38% at 50% 0%,rgba(255,209,102,.22),transparent 70%),radial-gradient(120% 70% at 50% 42%,var(--bg2),var(--bg) 72%);color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-weight:600;overflow:hidden;touch-action:manipulation}
+#app{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;padding:14px 16px 0}
+.num{font-family:Unbounded,Nunito,sans-serif}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:13px;font-weight:800}
+.chip b{color:var(--gd)}
+.brand{text-align:center;margin-top:12px;font:800 21px Unbounded,Nunito,sans-serif;letter-spacing:.6px;display:flex;justify-content:center;align-items:center;gap:8px}
+.brand span.t{background:linear-gradient(100deg,#ffd166,#fff6d6 40%,#ffb703 60%,#ffd166);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:shine 5s linear infinite}
+.brand .ic{width:26px;height:26px}
+@keyframes shine{to{background-position:-250% 0}}
+.score{text-align:center;margin:8px 0 0}
+.score .num{font-size:56px;font-weight:800;line-height:1;letter-spacing:-1px}
+.score small{color:var(--mute);font-size:13px}
+.view{flex:1;min-height:0;display:none;position:relative}
+.view.on{display:flex;flex-direction:column}
+#stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;padding-bottom:14px}
+#gem{width:min(78vw,320px);aspect-ratio:1;cursor:pointer;transition:transform .07s;filter:drop-shadow(0 0 36px rgba(255,209,102,.5));animation:pulse 3.2s ease-in-out infinite}
+#gem.hit{transform:scale(.92) rotate(-2deg)}
+@keyframes pulse{50%{filter:drop-shadow(0 0 66px rgba(138,91,255,.7))}}
+#stage::after{content:"";position:absolute;left:50%;bottom:1%;width:58%;height:26px;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(0,0,0,.65),transparent);pointer-events:none}
+.fl{position:absolute;font-family:Unbounded;font-weight:800;font-size:24px;color:var(--gd);pointer-events:none;animation:up .8s ease-out forwards;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+@keyframes up{to{transform:translateY(-100px);opacity:0}}
+.list{overflow:auto;display:flex;flex-direction:column;gap:8px;padding:12px 0}
+.me{display:flex;gap:8px}
+.me input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--ink);font:800 15px Nunito;outline:none}
+.me input:focus-visible{border-color:var(--cy)}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 14px}
+.row.you{border-color:var(--cy);background:rgba(94,242,224,.1)}
+.pos{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:800 14px Unbounded;background:rgba(255,255,255,.1);flex:none}
+.p1{background:var(--gd);color:#3a2600}.p2{background:#d5dcf2;color:#1b2340}.p3{background:#e59a66;color:#3a1c06}
+.nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}
+.sc{font:800 15px Unbounded;color:var(--cy)}
+.empty{text-align:center;color:var(--mute);padding:28px 10px;font-size:14px}
+.mine{font-size:13px;color:var(--mute);text-align:center;padding-top:10px}
+nav{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 0 12px}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:16px;padding:13px;font:800 14px Nunito}
+nav button.on{background:linear-gradient(135deg,#ffd166,#ff9f1c);color:#2a1500;border-color:transparent}
+.shophd{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:12px 16px;border-radius:16px;background:var(--card);border:1px solid var(--line);font-weight:800}
+.shophd b{font:800 20px Unbounded;color:var(--gd)}
+.sw{width:46px;height:46px;border-radius:14px;flex:none}
+.sk button{border:0;border-radius:14px;padding:10px 12px;font:800 13px Nunito;background:var(--cy);color:#06241f;min-width:92px}
+.sk button:disabled{background:rgba(255,255,255,.12);color:var(--mute)}
+.sk button:active:not(:disabled){transform:scale(.95)}
+.sec{font:800 14px Unbounded;color:var(--gd);margin:10px 2px 0}
+.nm small{display:block;color:var(--mute);font-weight:600;white-space:normal;font-size:12px;line-height:1.3}
+.sk.star button{background:var(--gd);color:#3a2600}
+.sk.star button:disabled{background:rgba(255,255,255,.12);color:var(--mute)}
+.sw{display:grid;place-items:center;font-size:22px}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translate(-50%,-20px);background:var(--gd);color:#3a2600;font-weight:800;padding:10px 18px;border-radius:999px;opacity:0;transition:.3s;pointer-events:none;z-index:9;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.ic{display:inline-block;width:1em;height:1em;vertical-align:-.15em;line-height:0}
+.ic svg{width:100%;height:100%;overflow:visible;display:block;transform-origin:50% 50%}
+.an-tw{animation:tw 2.2s ease-in-out infinite}
+.an-flk{animation:flk .9s ease-in-out infinite;transform-origin:50% 92%!important}
+.an-beat{animation:beat 1.3s ease-in-out infinite}
+.an-flash{animation:flash 2.4s ease-in-out infinite}
+.an-flt{animation:flt 1.6s ease-in-out infinite}
+.an-flip{animation:flip 2.6s ease-in-out infinite}
+.gl{transform-box:fill-box;transform-origin:center;animation:gl 2.2s ease-in-out infinite}
+@keyframes tw{50%{transform:rotate(22deg) scale(1.15)}}
+@keyframes flk{25%{transform:scale(.94,1.1)}50%{transform:scale(1.05,.95)}75%{transform:scale(.97,1.06)}}
+@keyframes beat{15%{transform:scale(1.2)}30%{transform:scale(1)}45%{transform:scale(1.13)}}
+@keyframes flash{50%{filter:brightness(1.35) drop-shadow(0 0 4px rgba(255,224,102,.9))}}
+@keyframes flt{50%{transform:translateY(-9%) rotate(-5deg)}}
+@keyframes flip{45%{transform:scaleX(.12)}55%{transform:scaleX(.12)}}
+@keyframes gl{0%,100%{opacity:0;transform:scale(.2)}50%{opacity:1;transform:scale(1) rotate(45deg)}}
+.fl .ic{width:34px;height:34px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
+.sw .ic{width:30px;height:30px}
+.sk button .ic{width:15px;height:15px;vertical-align:-3px}
+.bd .ic{margin-right:5px;vertical-align:-3px}
+.hc{display:flex;align-items:center;gap:8px}.hc .ic{width:26px;height:26px}
+.sp{position:absolute;width:20px;height:20px;pointer-events:none;opacity:.9}
+@media (prefers-reduced-motion:reduce){.ic svg,.ic .gl,.brand .t{animation:none!important}#gem{animation:none}.fl{animation-duration:.01s}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top">
+    <div class="chip" id="nick">Mehmon</div>
+    <div class="chip" id="rk">O‘rin <b>–</b></div>
+  </div>
+  <div class="brand" id="brand"><span class="t">Shadow Royale</span></div>
+  <div class="score"><div class="num" id="score">0</div><small>sizning bosishlaringiz</small></div>
 
-const { BOT_TOKEN, WEBAPP_URL, PORT = 3000 } = process.env;
-if (!BOT_TOKEN || !WEBAPP_URL) {
-  console.error("BOT_TOKEN va WEBAPP_URL kiriting!");
-  process.exit(1);
+  <section class="view on" id="v-play">
+    <div id="stage"><svg id="gem" viewBox="0 0 200 200" aria-label="Kristall"><use href="#gemsvg"/></svg></div>
+  </section>
+
+  <section class="view" id="v-top">
+    <div class="list" id="list"></div>
+    <div class="mine" id="mine"></div>
+  </section>
+
+  <section class="view" id="v-shop">
+    <div class="shophd"><span class="hc">Tangalar</span><b id="coins">0</b></div>
+    <div class="mine" id="prem"></div>
+    <div class="list" id="shop"></div>
+    <div class="mine">Do‘kon xaridlari reytingga ball qo‘shmaydi: musobaqa hamma uchun teng.</div>
+  </section>
+
+  <nav>
+    <button class="on" data-t="play">Bosish</button>
+    <button data-t="top">Reyting</button>
+    <button data-t="shop">Do‘kon</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6b8"/><stop offset=".5" stop-color="#ffc22e"/><stop offset="1" stop-color="#e07a00"/></linearGradient>
+    <linearGradient id="gf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9f1c"/><stop offset="1" stop-color="#ff2e4d"/></linearGradient>
+    <linearGradient id="gy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7a8"/><stop offset="1" stop-color="#ffb02e"/></linearGradient>
+    <linearGradient id="gh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffa6d6"/><stop offset="1" stop-color="#ff2e7e"/></linearGradient>
+    <linearGradient id="gz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbb0"/><stop offset="1" stop-color="#ffae00"/></linearGradient>
+    <linearGradient id="gr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#9fb0d8"/></linearGradient>
+    <linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6f8a"/><stop offset="1" stop-color="#c9184a"/></linearGradient>
+    <linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9fff6"/><stop offset=".6" stop-color="#3fb6e8"/><stop offset="1" stop-color="#5b3bd8"/></linearGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9fff6"/><stop offset="1" stop-color="#27c9d8"/></linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ef2e0"/><stop offset="1" stop-color="#3a63d8"/></linearGradient>
+    <linearGradient id="c" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5bff"/><stop offset="1" stop-color="#ff4fa3"/></linearGradient>
+    <symbol id="gemsvg" viewBox="0 0 200 200">
+      <polygon points="60,40 140,40 180,85 100,185 20,85" fill="url(#b)"/>
+      <polygon points="60,40 100,85 20,85" fill="url(#a)"/>
+      <polygon points="140,40 180,85 100,85" fill="#e9fffb" opacity=".85"/>
+      <polygon points="60,40 140,40 100,85" fill="#ffffff" opacity=".9"/>
+      <polygon points="20,85 100,85 100,185" fill="url(#c)" opacity=".8"/>
+      <polygon points="180,85 100,85 100,185" fill="#2a3fb0" opacity=".75"/>
+      <polygon points="72,52 92,52 80,66" fill="#fff" opacity=".95"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+(function(){
+var tg=window.Telegram&&window.Telegram.WebApp;
+if(tg){
+  try{tg.ready();tg.expand()}catch(e){}
+  try{tg.disableVerticalSwipes()}catch(e){}
+  try{if(tg.platform==='android'||tg.platform==='ios'||tg.platform==='android_x'){tg.requestFullscreen()}}catch(e){}
+  try{tg.setHeaderColor('#080510');tg.setBackgroundColor('#080510');if(tg.setBottomBarColor)tg.setBottomBarColor('#080510')}catch(e){}
+}
+function buzz(){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred('light')}catch(e){}}
+function $(i){return document.getElementById(i)}
+function fmt(n){return Number(n).toLocaleString('en-US').replace(/,/g,' ')}
+var ST5='M12 2.5l2.9 6.2 6.8.8-5 4.7 1.3 6.8L12 17.6 6 21l1.3-6.8-5-4.7 6.8-.8z';
+var P={
+star:'<path fill="url(#gd)" stroke="#c77700" stroke-width=".6" d="'+ST5+'"/><path fill="#fff" opacity=".6" d="M12 5l1.5 3.6-3.1.4z"/>',
+spark:'<path fill="url(#gd)" d="M12 1.5c.8 5.2 3.3 8.7 9.5 10.5-6.2 1.8-8.7 5.3-9.5 10.5-.8-5.2-3.3-8.7-9.5-10.5C8.7 10.2 11.2 6.7 12 1.5z"/><circle cx="12" cy="12" r="1.8" fill="#fff" opacity=".85"/>',
+fire:'<path fill="url(#gf)" d="M12 2c1 3.5 5.5 5.6 5.5 11a5.5 5.5 0 0 1-11 0c0-2 .8-3.4 2-4.6.2 1.6 1 2.4 1.9 2.8C10 8.5 10.5 5 12 2z"/><path fill="url(#gy)" d="M12 22a3.2 3.2 0 0 1-3.2-3.3c0-2 1.7-3 3.2-5 1.5 2 3.2 3 3.2 5A3.2 3.2 0 0 1 12 22z"/>',
+heart:'<path fill="url(#gh)" d="M12 21s-8.5-5.2-8.5-11.2C3.5 6.6 5.8 4.5 8.5 4.5c1.5 0 2.8.8 3.5 2 .7-1.2 2-2 3.5-2 2.7 0 5 2.1 5 5.3C20.5 15.8 12 21 12 21z"/><ellipse cx="8" cy="8.4" rx="2" ry="1.2" fill="#fff" opacity=".6" transform="rotate(-30 8 8.4)"/>',
+bolt:'<path fill="url(#gz)" stroke="#e08a00" stroke-width=".7" stroke-linejoin="round" d="M13.5 1.5L4.5 13.5h6l-1.5 9 9-12h-6z"/>',
+rocket:'<path fill="url(#gp)" d="M7.2 12.5L3.5 16.5v3l3.7-2.2zM16.8 12.5l3.7 4v3l-3.7-2.2z"/><path fill="url(#gy)" d="M10 15.8h4L12 22z"/><path fill="url(#gr)" d="M12 1.5c3.2 2.3 4.8 5.6 4.8 9.5v4.3H7.2V11c0-3.9 1.6-7.2 4.8-9.5z"/><circle cx="12" cy="9.5" r="1.9" fill="#3a63d8" stroke="#fff" stroke-width=".8"/>',
+crown:'<path fill="url(#gd)" stroke="#b86b00" stroke-width=".7" stroke-linejoin="round" d="M2.5 7.5l5 4 4.5-7 4.5 7 5-4-2 12.5h-15z"/><circle cx="12" cy="15" r="1.6" fill="#ff4fa3"/><circle cx="7.6" cy="16" r="1" fill="#5ef2e0"/><circle cx="16.4" cy="16" r="1" fill="#5ef2e0"/>',
+coin:'<circle cx="12" cy="12" r="10" fill="url(#gd)" stroke="#b86b00" stroke-width="1"/><circle cx="12" cy="12" r="7.4" fill="none" stroke="#fff3b0" stroke-width="1.1" opacity=".85"/><path fill="#d97500" transform="translate(12 12) scale(.5) translate(-12 -12.2)" d="'+ST5+'"/>',
+gem:'<polygon points="6,3 18,3 22,9 12,22 2,9" fill="url(#gg)"/><polygon points="6,3 18,3 12,9" fill="#fff" opacity=".75"/><polygon points="2,9 12,9 6,3" fill="#fff" opacity=".4"/><polygon points="22,9 12,9 12,22" fill="#1b1f7a" opacity=".35"/>',
+none:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="#a995d8" stroke-width="2"/><path d="M6 18L18 6" stroke="#a995d8" stroke-width="2"/>'
+};
+P.prem=P.star;
+var AN={star:'tw',prem:'tw',spark:'tw',fire:'flk',heart:'beat',bolt:'flash',rocket:'flt',crown:'flash',coin:'flip',gem:'tw'};
+var GLS={star:1,prem:1,spark:1,crown:1,coin:1,gem:1};
+function has(o,k){return Object.prototype.hasOwnProperty.call(o,k)}
+function ic(id){
+  if(!has(P,id))return '';
+  return '<span class="ic"><svg viewBox="0 0 24 24" class="an-'+(AN[id]||'x')+'">'+P[id]+(GLS[id]?'<path class="gl" fill="#fff" d="M19 1.5l1 2.5 2.5 1-2.5 1L19 8.5 18 6l-2.5-1 2.5-1z"/>':'')+'</svg></span>';
+}
+function badgeEl(str){
+  var sp=document.createElement('span');sp.className='bd';var h='';
+  String(str||'').split(',').forEach(function(x){if(x&&x!=='none'&&has(P,x))h+=ic(x)});
+  sp.innerHTML=h;return sp;
 }
 
-const MAX_TPS = 15; // bir soniyada ruxsat etilgan maksimal bosish (avto-kliker himoyasi)
-const DB_FILE = "db.json";
+var KEY='kristall-musobaqa-v1',S={score:0,name:'',coins:0,skins:['feruza'],skin:'feruza'};
+try{var r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}
+S.coins=S.coins||0;S.skins=S.skins||['feruza'];S.skin=S.skin||'feruza';S.fxs=S.fxs||['def'];S.fx=S.fx||'def';S.badges=S.badges||[''];S.badge=S.badge||'';S.premiumUntil=S.premiumUntil||0;
+var tu=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;
+if(tu){S.name=tu.first_name||tu.username||S.name}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function myName(){return (S.name||'').trim()||'Mehmon'}
 
-// ---------- Oddiy baza (db.json) ----------
-let db = { users: {}, charges: {} };
-try { db = { ...db, ...JSON.parse(fs.readFileSync(DB_FILE, "utf8")) }; } catch {}
-let t;
-const save = () => {
-  clearTimeout(t);
-  t = setTimeout(() => fs.writeFile(DB_FILE, JSON.stringify(db), () => {}), 1000);
-};
-const getUser = (id) =>
-  (db.users[id] ||= { name: "Mehmon", score: 0, badge: "", premiumUntil: 0, coinsGranted: 0, skins: [], lastSync: 0 });
-
-// ---------- Stars mahsulotlari (client bilan bir xil id) ----------
-const ITEMS = {
-  sub30: { title: "Premium 30 kun", stars: 150, days: 30 },
-  sub90: { title: "Premium 90 kun", stars: 400, days: 90 },
-  sub365: { title: "Premium 1 yil", stars: 1400, days: 365 },
-  p500: { title: "500 tanga", stars: 25, coins: 500 },
-  p2500: { title: "2 500 tanga", stars: 100, coins: 2500 },
-  p10000: { title: "10 000 tanga", stars: 300, coins: 10000 },
-  gal: { title: "Galaktika kristali", stars: 99, skin: "galaktika" },
-};
-
-function grant(uid, itemId) {
-  const it = ITEMS[itemId];
-  const u = getUser(uid);
-  if (it.days) {
-    u.premiumUntil = Math.max(Date.now(), u.premiumUntil || 0) + it.days * 864e5;
-    if (!u.skins.includes("galaktika")) u.skins.push("galaktika");
-  }
-  if (it.coins) u.coinsGranted += it.coins;
-  if (it.skin && !u.skins.includes(it.skin)) u.skins.push(it.skin);
-  save();
+/* ---------- Reyting (jadval) ---------- */
+var uid=null,db=null,rows=[],dirty=false,busy=false;
+var HOST=!!(tg&&tg.initData); // Telegram ichida: server (bot.js) bilan ishlaydi
+function api(path,body){
+  return fetch(path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json','x-init-data':tg.initData},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json()});
+}
+function applyState(j){
+  if(!j||j.error)return;
+  uid=j.id;
+  S.premiumUntil=j.premiumUntil||0;
+  var g=j.coinsGranted||0;S.coins+=g-(S.grantedSeen||0);S.grantedSeen=g;
+  (j.skins||[]).forEach(function(k){if(S.skins.indexOf(k)<0)S.skins.push(k)});
+  if(j.score>S.score)S.score=j.score;
+  save();render();paintTop();
 }
 
-// ---------- Telegram initData tekshiruvi ----------
-function verify(initData) {
-  const p = new URLSearchParams(initData);
-  const hash = p.get("hash");
-  if (!hash) return null;
-  p.delete("hash");
-  const str = [...p.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => `${k}=${v}`).join("\n");
-  const secret = crypto.createHmac("sha256", "WebAppData").update(BOT_TOKEN).digest();
-  const h = crypto.createHmac("sha256", secret).update(str).digest("hex");
-  if (h !== hash) return null;
-  if (Date.now() / 1000 - Number(p.get("auth_date")) > 86400) return null;
-  try { return JSON.parse(p.get("user")); } catch { return null; }
-}
-const auth = (req, res, next) => {
-  const u = verify(req.get("x-init-data") || "");
-  if (!u) return res.status(401).json({ error: "auth" });
-  req.tg = u;
-  next();
-};
-const view = (id, u) => ({
-  id: String(id), score: u.score, premiumUntil: u.premiumUntil,
-  coinsGranted: u.coinsGranted, skins: u.skins,
-});
-
-// ---------- Server ----------
-const app = express();
-app.use(express.json());
-app.use(express.static("public"));
-app.get("/health", (_, res) => res.send("ok"));
-
-app.get("/api/state", auth, (req, res) => {
-  const u = getUser(req.tg.id);
-  u.name = req.tg.first_name || req.tg.username || u.name;
-  save();
-  res.json(view(req.tg.id, u));
-});
-
-app.post("/api/sync", auth, (req, res) => {
-  const u = getUser(req.tg.id);
-  const now = Date.now();
-  const dt = u.lastSync ? Math.min(86400, (now - u.lastSync) / 1000) : 1;
-  const allowed = u.score + Math.ceil(dt * MAX_TPS) + 5;
-  const claimed = Math.floor(Number(req.body.score) || 0);
-  if (claimed > u.score) u.score = Math.min(claimed, allowed);
-  u.lastSync = now;
-  u.name = req.tg.first_name || req.tg.username || u.name;
-  const okBadges = ["prem", "bolt", "rocket", "crown"];
-  u.badge = String(req.body.badge || "")
-    .split(",")
-    .filter((b) => okBadges.includes(b) && (b !== "prem" || u.premiumUntil > now))
-    .slice(0, 2)
-    .join(",");
-  save();
-  res.json(view(req.tg.id, u));
-});
-
-app.get("/api/top", (_, res) => {
-  const top = Object.entries(db.users)
-    .map(([id, u]) => ({ id, name: u.name, score: u.score, badge: u.badge }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
-  res.json({ top });
-});
-
-async function tgApi(method, body) {
-  const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${method}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+function paintTop(){
+  var l=$('list');l.textContent='';
+  if(!rows.length){var e=document.createElement('div');e.className='empty';e.textContent=(db||HOST)?'Hali hech kim bosmadi. Birinchi bo‘ling!':'Umumiy reyting ulanmagan. Natijangiz faqat shu qurilmada.';l.appendChild(e)}
+  var me=-1;
+  rows.forEach(function(d,i){
+    var isMe=d.id===uid;if(isMe)me=i+1;
+    var el=document.createElement('div');el.className='row'+(isMe?' you':'');
+    var p=document.createElement('div');p.className='pos'+(i<3?' p'+(i+1):'');p.textContent=i+1;
+    var n=document.createElement('div');n.className='nm';n.appendChild(badgeEl(d.badge));n.appendChild(document.createTextNode(d.name||'Mehmon'));if(i<3){var t=document.createElement('small');t.textContent=['Shoh','Malika','Ritsar'][i];n.appendChild(t)}
+    var s=document.createElement('div');s.className='sc';s.textContent=fmt(d.score||0);
+    el.appendChild(p);el.appendChild(n);el.appendChild(s);l.appendChild(el);
   });
-  return r.json();
+  if(me<0){var el=document.createElement('div');el.className='row you';var p=document.createElement('div');p.className='pos';p.textContent='•';var n=document.createElement('div');n.className='nm';n.appendChild(badgeEl(myBadge()));n.appendChild(document.createTextNode(myName()));var s=document.createElement('div');s.className='sc';s.textContent=fmt(S.score);el.appendChild(p);el.appendChild(n);el.appendChild(s);l.appendChild(el)}
+  $('rk').innerHTML='O‘rin <b>'+(me>0?me:'–')+'</b>';
+  $('mine').textContent=me>0?'Siz '+me+'-o‘rindasiz':((db||HOST)?'Top 10 ga kirish uchun ko‘proq bosing':'');
 }
 
-app.post("/api/invoice", auth, async (req, res) => {
-  const it = ITEMS[req.body.item];
-  if (!it) return res.status(400).json({ error: "item" });
-  const r = await tgApi("createInvoiceLink", {
-    title: it.title,
-    description: "Shadow Royale: " + it.title,
-    payload: `${req.tg.id}:${req.body.item}`,
-    currency: "XTR",
-    prices: [{ label: it.title, amount: it.stars }],
+function push(){
+  if(HOST){if(busy||!dirty)return;busy=true;dirty=false;api('/api/sync',{score:S.score,badge:myBadge()}).then(applyState).catch(function(){dirty=true}).then(function(){busy=false});return}
+  if(!db||!uid||busy||!dirty)return;
+  busy=true;dirty=false;
+  db.doc('scores/'+uid).set({name:myName(),score:S.score,badge:myBadge()}).catch(function(){dirty=true}).then(function(){busy=false});
+}
+
+Promise.race([
+  (window.claude?window.claude.use('user'):Promise.resolve(null)).then(function(u){if(!u)return null;if(!tu){u.me().then(function(m){if(m&&m.name){S.name=m.name;dirty=true;render();paintTop()}}).catch(function(){})}return u.id()}),
+  new Promise(function(r){setTimeout(function(){r(null)},8000)})
+]).then(function(id){
+  if(!id||!window.claude)return null;uid=id;return window.claude.use('db');
+}).then(function(d){
+  if(!d)return;db=d;
+  db.collection('scores').orderBy('score','desc').limit(10).onSnapshot(function(snap){
+    rows=[];snap.forEach(function(x){var v=x.data();rows.push({id:x.id,name:v.name,score:v.score,badge:v.badge})});
+    paintTop();
   });
-  if (!r.ok) return res.status(500).json({ error: r.description });
-  res.json({ link: r.result });
+  dirty=S.score>0;push();
+}).catch(function(){});
+setInterval(push,2000);
+
+/* ---------- O'yin ---------- */
+function render(){
+  $('score').textContent=fmt(S.score);
+  var nk=$('nick');nk.textContent='';nk.appendChild(badgeEl(myBadge()));nk.appendChild(document.createTextNode(myName()));
+  $('coins').textContent=fmt(S.coins);
+  if($('v-shop').classList.contains('on'))paintShop();
+}
+function tap(x,y){
+  S.score++;dirty=true;if(S.score%10===0)S.coins+=isPrem()?2:1;
+  var g=$('gem');g.classList.add('hit');setTimeout(function(){g.classList.remove('hit')},60);
+  buzz();
+  var st=$('stage'),b=st.getBoundingClientRect(),f=document.createElement('div');
+  f.className='fl';f.innerHTML=fxHTML();
+  f.style.left=(x-b.left-12+(Math.random()*40-20))+'px';f.style.top=(y-b.top-30)+'px';
+  st.appendChild(f);setTimeout(function(){f.remove()},800);
+  render();
+}
+var gem=$('gem');
+gem.addEventListener('touchstart',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)tap(e.changedTouches[i].clientX,e.changedTouches[i].clientY)},{passive:false});
+gem.addEventListener('mousedown',function(e){tap(e.clientX,e.clientY)});
+
+var SKINS=[
+{id:'feruza',n:'Feruza',p:0,c:['#b9fff6','#27c9d8','#5ef2e0','#3a63d8','#8a5bff','#ff4fa3']},
+{id:'yoqut',n:'Yoqut',p:30,c:['#ffd0d6','#ff4d6d','#ff8fa3','#c9184a','#ff4fa3','#7a0c2e']},
+{id:'zumrad',n:'Zumrad',p:80,c:['#d3ffd9','#2ecc71','#7dffb0','#0f8a5f','#38d9a9','#145a4a']},
+{id:'oltin',n:'Oltin',p:200,c:['#fff4c2','#ffb703','#ffe066','#e07a00','#ffd166','#a35200']},
+{id:'ametist',n:'Ametist',p:500,c:['#f0d9ff','#b266ff','#d9a8ff','#6a2bd9','#ff4fa3','#3a1180']},
+{id:'galaktika',n:'Galaktika',p:-1,c:['#ffe0f6','#ff4fa3','#9ad7ff','#5b2bff','#ffd166','#12063a']}
+];
+var FX=[{id:'def',n:'Oddiy +1',p:0},{id:'star',n:'Yulduzlar',i:'spark',p:40},{id:'fire',n:'Olov',i:'fire',p:120},{id:'heart',n:'Yurakchalar',i:'heart',p:250}];
+var BADGES=[{id:'',n:'Nishonsiz',i:'none',p:0},{id:'bolt',n:'Chaqmoq',i:'bolt',p:60},{id:'rocket',n:'Raketa',i:'rocket',p:150},{id:'crown',n:'Toj',i:'crown',p:400}];
+var STARS=[
+{id:'sub30',n:'Bot obunasi \u00b7 30 kun',d:'Premium: 2x tanga, oltin yulduz nishoni, Galaktika kristali',s:150,days:30},
+{id:'sub90',n:'Bot obunasi \u00b7 90 kun',d:'Oylik narxdan 11% arzon',s:400,days:90},
+{id:'sub365',n:'Bot obunasi \u00b7 1 yil',d:'Eng foydali narx',s:1400,days:365},
+{id:'p500',n:'500 tanga',d:'Do\u2018kon uchun tanga',s:25,coins:500},
+{id:'p2500',n:'2 500 tanga',d:'Do\u2018kon uchun tanga',s:100,coins:2500},
+{id:'p10000',n:'10 000 tanga',d:'Do\u2018kon uchun tanga',s:300,coins:10000},
+{id:'gal',n:'Galaktika kristali',d:'Faqat Stars bilan',s:99,skin:'galaktika'}
+];
+function isPrem(){return S.premiumUntil>Date.now()}
+function myBadge(){return (isPrem()?'prem,':'')+(S.badge||'')}
+function fxHTML(){var k=FX.filter(function(x){return x.id===S.fx})[0];return k&&k.i?ic(k.i):'+1'}
+function skin(){return SKINS.filter(function(x){return x.id===S.skin})[0]||SKINS[0]}
+function applySkin(){var k=skin();['a','b','c'].forEach(function(id,i){var st=document.querySelectorAll('#'+id+' stop');st[0].setAttribute('stop-color',k.c[i*2]);st[1].setAttribute('stop-color',k.c[i*2+1])})}
+function toast(t){var e=$('toast');e.textContent=t;e.className='toast on';setTimeout(function(){e.className='toast'},1800)}
+function changed(){applySkin();save();dirty=true;render();push()}
+
+function head(l,t){var h=document.createElement('div');h.className='sec';h.textContent=t;l.appendChild(h)}
+function item(l,o){
+  var el=document.createElement('div');el.className='row sk'+(o.on?' you':'')+(o.star?' star':'');
+  var sw=document.createElement('div');sw.className='sw';sw.style.background=o.bg||'var(--card)';sw.innerHTML=o.ic||'';
+  var m=document.createElement('div');m.className='nm';m.textContent=o.name;
+  if(o.desc){var d=document.createElement('small');d.textContent=o.desc;m.appendChild(d)}
+  var b=document.createElement('button');if(o.lh)b.innerHTML=o.lh;else b.textContent=o.label;b.disabled=!!o.dis;b.addEventListener('click',o.act);
+  el.appendChild(sw);el.appendChild(m);el.appendChild(b);l.appendChild(el);
+}
+function coinItem(l,o,own,cur,key,ck,vis){
+  var has=S[own].indexOf(o.id)>-1,on=S[cur]===o.id;
+  item(l,{on:on,name:o.n,ic:vis.ic,bg:vis.bg,label:on?'Tanlangan':has?'Tanlash':o.p+' tanga',dis:on||(!has&&S.coins<o.p),act:function(){
+    if(!has){if(S.coins<o.p)return;S.coins-=o.p;S[own].push(o.id)}
+    S[cur]=o.id;changed();
+  }});
+}
+function grant(o){
+  if(o.coins)S.coins+=o.coins;
+  if(o.skin&&S.skins.indexOf(o.skin)<0)S.skins.push(o.skin);
+  if(o.days){S.premiumUntil=Math.max(Date.now(),S.premiumUntil||0)+o.days*864e5;if(S.skins.indexOf('galaktika')<0)S.skins.push('galaktika')}
+  changed();toast('Rahmat! Xarid qilindi');
+}
+function payStars(o){
+  if(!HOST){toast('Stars to\u2018lovi faqat Telegram botda ishlaydi');return}
+  api('/api/invoice',{item:o.id}).then(function(j){
+    if(!j.link)throw 0;
+    tg.openInvoice(j.link,function(st){if(st==='paid'){toast('Rahmat! Tekshirilmoqda...');setTimeout(function(){api('/api/state').then(applyState)},1500)}});
+  }).catch(function(){toast('To\u2018lov ochilmadi, keyinroq urinib ko\u2018ring')});
+}
+function paintShop(){
+  var l=$('shop'),top=l.scrollTop;l.textContent='';
+  var left=Math.ceil((S.premiumUntil-Date.now())/864e5);
+  $('prem').textContent=isPrem()?'Premium faol: '+left+' kun qoldi':'';
+  head(l,'Stars bilan');
+  STARS.forEach(function(o){
+    var has=o.skin&&S.skins.indexOf(o.skin)>-1;
+    item(l,{star:1,name:o.n,desc:o.d,ic:ic(o.days?'prem':o.coins?'coin':'gem'),bg:'linear-gradient(135deg,#ffd166,#ff4fa3)',label:'Sizda bor',lh:has?'':o.s+' '+ic('star'),dis:has,act:function(){payStars(o)}});
+  });
+  head(l,'Kristallar');
+  SKINS.forEach(function(k){if(k.p<0&&S.skins.indexOf(k.id)<0)return;coinItem(l,k,'skins','skin',0,0,{bg:'linear-gradient(135deg,'+k.c[0]+','+k.c[1]+' 55%,'+k.c[4]+')'})});
+  head(l,'Bosish effektlari');
+  FX.forEach(function(k){coinItem(l,k,'fxs','fx',0,0,{ic:k.i?ic(k.i):'<b style="font:800 14px Unbounded">+1</b>'})});
+  head(l,'Ism nishonlari');
+  BADGES.forEach(function(k){coinItem(l,k,'badges','badge',0,0,{ic:ic(k.i)})});
+  l.scrollTop=top;
+}
+
+document.querySelector('nav').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('on',x===b)});
+  $('v-play').classList.toggle('on',b.dataset.t==='play');
+  $('v-top').classList.toggle('on',b.dataset.t==='top');
+  $('v-shop').classList.toggle('on',b.dataset.t==='shop');
+  if(b.dataset.t==='top')paintTop();
+  if(b.dataset.t==='shop')paintShop();
 });
 
-app.listen(PORT, "0.0.0.0", () => console.log("Server port:", PORT));
-
-// ---------- Bot ----------
-const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-
-bot.onText(/\/start/, (msg) => {
-  bot.sendMessage(
-    msg.chat.id,
-    `Salom, ${msg.from.first_name}! 👑\nShadow Royale: eng ko'p bosgan g'olib bo'ladi.\nReytingda birinchi bo'ling!`,
-    {
-      reply_markup: {
-        inline_keyboard: [[{ text: "👑 O'ynash", web_app: { url: WEBAPP_URL } }]],
-      },
-    }
-  );
+setInterval(save,3000);
+document.addEventListener('visibilitychange',function(){save();push()});
+applySkin();render();paintTop();
+if(HOST){
+  api('/api/state').then(function(j){if(j&&!j.error){S.score=j.score||0;applyState(j)}}).catch(function(){});
+  var poll=function(){api('/api/top').then(function(j){rows=j.top||[];paintTop()}).catch(function(){})};
+  poll();setInterval(poll,5000);
+}
+$('brand').insertAdjacentHTML('afterbegin',ic('crown'));
+$('v-shop').querySelector('.hc').insertAdjacentHTML('afterbegin',ic('coin'));
+[[20,18],[80,22],[12,58],[86,62],[50,8],[70,88]].forEach(function(q,i){
+  var e=document.createElement('span');e.className='sp';e.style.left=q[0]+'%';e.style.top=q[1]+'%';
+  e.style.animationDelay=(i*.4)+'s';e.innerHTML=ic('spark');
+  e.querySelector('svg').style.animationDelay=(i*.45)+'s';
+  $('stage').appendChild(e);
 });
-
-bot.on("pre_checkout_query", (q) => bot.answerPreCheckoutQuery(q.id, true));
-
-bot.on("message", (msg) => {
-  const p = msg.successful_payment;
-  if (!p) return;
-  const [uid, item] = p.invoice_payload.split(":");
-  if (!ITEMS[item] || db.charges[p.telegram_payment_charge_id]) return;
-  db.charges[p.telegram_payment_charge_id] = 1;
-  grant(uid, item);
-  bot.sendMessage(msg.chat.id, "Rahmat! Xaridingiz o'yinga qo'shildi 👑");
-});
-
-tgApi("setChatMenuButton", {
-  menu_button: { type: "web_app", text: "O'ynash", web_app: { url: WEBAPP_URL } },
-});
-
-console.log("Bot ishga tushdi...");
+})();
+</script>
+</body>
+</html>
 
