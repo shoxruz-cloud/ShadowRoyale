@@ -223,8 +223,20 @@ function paintTop(){
   $('mine').textContent=me>0?'Siz '+me+'-o‘rindasiz':((db||HOST)?'Top 10 ga kirish uchun ko‘proq bosing':'');
 }
 
+var restored=false,loading=false;
+function pack(){return{coins:S.coins,skins:S.skins,skin:S.skin,fxs:S.fxs,fx:S.fx,badges:S.badges,badge:S.badge,grantedSeen:S.grantedSeen||0}}
+function loadState(){
+  if(loading)return;loading=true;
+  api('/api/state').then(function(j){
+    if(!j||j.error)return;
+    S.score=j.score||0;
+    var d=j.data;
+    if(j.hasData&&d){S.coins=d.coins;S.skins=d.skins;S.skin=d.skin;S.fxs=d.fxs;S.fx=d.fx;S.badges=d.badges;S.badge=d.badge;S.grantedSeen=d.grantedSeen||0}
+    applyState(j);applySkin();restored=true;
+  }).catch(function(){}).then(function(){loading=false});
+}
 function push(){
-  if(HOST){if(busy||!dirty)return;busy=true;dirty=false;api('/api/sync',{score:S.score,badge:myBadge()}).then(applyState).catch(function(){dirty=true}).then(function(){busy=false});return}
+  if(HOST){if(!restored){loadState();return}if(busy||!dirty)return;busy=true;dirty=false;api('/api/sync',{score:S.score,badge:myBadge(),data:pack()}).then(applyState).catch(function(){dirty=true}).then(function(){busy=false});return}
   if(!db||!uid||busy||!dirty)return;
   busy=true;dirty=false;
   db.doc('scores/'+uid).set({name:myName(),score:S.score,badge:myBadge()}).catch(function(){dirty=true}).then(function(){busy=false});
@@ -354,7 +366,7 @@ setInterval(save,3000);
 document.addEventListener('visibilitychange',function(){save();push()});
 applySkin();render();paintTop();
 if(HOST){
-  api('/api/state').then(function(j){if(j&&!j.error){S.score=j.score||0;applyState(j)}}).catch(function(){});
+  loadState();
   var poll=function(){api('/api/top').then(function(j){rows=j.top||[];paintTop()}).catch(function(){})};
   poll();setInterval(poll,5000);
 }

@@ -12,18 +12,52 @@ if (!BOT_TOKEN || !WEBAPP_URL) {
 }
 
 const MAX_TPS = 15; // bir soniyada ruxsat etilgan maksimal bosish (avto-kliker himoyasi)
-const DB_FILE = "db.json";
+const DB_FILE = process.env.DB_PATH || "db.json"; // doimiy diskda bo'lsa: DB_PATH=/data/db.json
 
 // ---------- Oddiy baza (db.json) ----------
 let db = { users: {}, charges: {} };
 try { db = { ...db, ...JSON.parse(fs.readFileSync(DB_FILE, "utf8")) }; } catch {}
 let t;
-const save = () => {
-  clearTimeout(t);
-  t = setTimeout(() => fs.writeFile(DB_FILE, JSON.stringify(db), () => {}), 1000);
+const flush = () => {
+  try {
+    fs.writeFileSync(DB_FILE + ".tmp", JSON.stringify(db));
+    fs.renameSync(DB_FILE + ".tmp", DB_FILE); // yarim yozilib qolmasligi uchun
+  } catch (e) { console.error("Saqlash xatosi:", e.message); }
 };
+const save = () => { clearTimeout(t); t = setTimeout(flush, 1000); };
+process.on("SIGTERM", () => { flush(); process.exit(0); });
+process.on("SIGINT", () => { flush(); process.exit(0); });
+setInterval(() => { try { fs.copyFileSync(DB_FILE, DB_FILE + ".bak"); } catch {} }, 3600e3); // soatlik zaxira
 const getUser = (id) =>
-  (db.users[id] ||= { name: "Mehmon", score: 0, badge: "", premiumUntil: 0, coinsGranted: 0, skins: [], lastSync: 0 });
+  (db.users[id] ||= {
+    name: "Mehmon", score: 0, badge: "", premiumUntil: 0, coinsGranted: 0, skins: [], lastSync: 0,
+    joined: Date.now(), hasData: false,
+    data: { coins: 0, skins: ["feruza"], skin: "feruza", fxs: ["def"], fx: "def", badges: [""], badge: "", grantedSeen: 0 },
+  });
+
+const SKIN_IDS = ["feruza", "yoqut", "zumrad", "oltin", "ametist", "galaktika"];
+const FX_IDS = ["def", "star", "fire", "heart"];
+const BADGE_IDS = ["", "bolt", "rocket", "crown"];
+function cleanData(d, u) {
+  d = d && typeof d === "object" ? d : {};
+  const arr = (a, ok, def) => {
+    const r = [...new Set((Array.isArray(a) ? a : []).filter((x) => ok.includes(x)))];
+    if (!r.includes(def)) r.unshift(def);
+    return r;
+  };
+  const pick = (v, list, def) => (list.includes(v) ? v : def);
+  const skins = arr(d.skins, SKIN_IDS, "feruza").filter((x) => x !== "galaktika" || u.skins.includes("galaktika"));
+  const fxs = arr(d.fxs, FX_IDS, "def");
+  const badges = arr(d.badges, BADGE_IDS, "");
+  const earned = Math.floor(u.score / 10) * 2 + u.coinsGranted; // tangalar bundan ko'p bo'lolmaydi
+  return {
+    coins: Math.max(0, Math.min(Math.floor(Number(d.coins)) || 0, earned)),
+    skins, skin: pick(d.skin, skins, "feruza"),
+    fxs, fx: pick(d.fx, fxs, "def"),
+    badges, badge: pick(d.badge, badges, ""),
+    grantedSeen: Math.max(0, Math.min(Math.floor(Number(d.grantedSeen)) || 0, u.coinsGranted)),
+  };
+}
 
 // ---------- Stars mahsulotlari (client bilan bir xil id) ----------
 const ITEMS = {
@@ -69,7 +103,7 @@ const auth = (req, res, next) => {
 };
 const view = (id, u) => ({
   id: String(id), score: u.score, premiumUntil: u.premiumUntil,
-  coinsGranted: u.coinsGranted, skins: u.skins,
+  coinsGranted: u.coinsGranted, skins: u.skins, hasData: u.hasData, data: u.data,
 });
 
 // ---------- Server ----------
@@ -100,6 +134,7 @@ app.post("/api/sync", auth, (req, res) => {
     .filter((b) => okBadges.includes(b) && (b !== "prem" || u.premiumUntil > now))
     .slice(0, 2)
     .join(",");
+  if (req.body.data) { u.data = cleanData(req.body.data, u); u.hasData = true; }
   save();
   res.json(view(req.tg.id, u));
 });
@@ -140,10 +175,21 @@ app.listen(PORT, "0.0.0.0", () => console.log("Server port:", PORT));
 // ---------- Bot ----------
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
+function greet(msg) {
+  const id = msg.from.id, name = msg.from.first_name || "do'st";
+  const u = db.users[id];
+  if (!u || !u.score) {
+    getUser(id).name = name; save();
+    return `Salom, ${name}! 👑\nShadow Royale: eng ko'p bosgan g'olib bo'ladi.\nReytingda birinchi bo'ling!`;
+  }
+  const rank = Object.values(db.users).filter((x) => x.score > u.score).length + 1;
+  return `Qaytganingiz bilan, ${name}! 👑\nBallingiz: ${u.score}\nReytingdagi o'rningiz: ${rank}\nO'yinni davom ettiring:`;
+}
+
 bot.onText(/\/start/, (msg) => {
   bot.sendMessage(
     msg.chat.id,
-    `Salom, ${msg.from.first_name}! 👑\nShadow Royale: eng ko'p bosgan g'olib bo'ladi.\nReytingda birinchi bo'ling!`,
+    greet(msg),
     {
       reply_markup: {
         inline_keyboard: [[{ text: "👑 O'ynash", web_app: { url: WEBAPP_URL } }]],
