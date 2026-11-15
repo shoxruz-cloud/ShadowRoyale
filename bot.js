@@ -175,27 +175,50 @@ app.listen(PORT, "0.0.0.0", () => console.log("Server port:", PORT));
 // ---------- Bot ----------
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-function greet(msg) {
-  const id = msg.from.id, name = msg.from.first_name || "do'st";
-  const u = db.users[id];
-  if (!u || !u.score) {
-    getUser(id).name = name; save();
-    return `Salom, ${name}! 👑\nShadow Royale: eng ko'p bosgan g'olib bo'ladi.\nReytingda birinchi bo'ling!`;
-  }
-  const rank = Object.values(db.users).filter((x) => x.score > u.score).length + 1;
-  return `Qaytganingiz bilan, ${name}! 👑\nBallingiz: ${u.score}\nReytingdagi o'rningiz: ${rank}\nO'yinni davom ettiring:`;
+const esc = (x) => String(x).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+const fmt = (n) => Number(n).toLocaleString("en-US").replace(/,/g, " ");
+let BOT_USER = "";
+bot.getMe().then((m) => (BOT_USER = m.username)).catch(() => {});
+bot.setMyCommands([
+  { command: "start", description: "O'yinni ochish" },
+  { command: "top", description: "Eng kuchli 10 o'yinchi" },
+]).catch(() => {});
+
+function startText(name, custom) {
+  const e1 = custom ? `<tg-emoji emoji-id="5258501105293205250">👏</tg-emoji>` : "👏";
+  const e2 = custom ? `<tg-emoji emoji-id="5258093637450866522">🤖</tg-emoji>` : "🤖";
+  return (
+    `${e1} Xush kelibsiz ${name} !\n\n` +
+    `${e2} O'yinni boshlash uchun Ochish tugmasini bosing. Muammolar bo'lsa Supportga murojat qiling !`
+  );
 }
 
-bot.onText(/\/start/, (msg) => {
-  bot.sendMessage(
-    msg.chat.id,
-    greet(msg),
-    {
-      reply_markup: {
-        inline_keyboard: [[{ text: "👑 O'ynash", web_app: { url: WEBAPP_URL } }]],
-      },
-    }
-  );
+bot.onText(/^\/start/, async (msg) => {
+  const f = msg.from;
+  const u = getUser(f.id);
+  u.name = f.first_name || u.name;
+  save();
+  const name = esc(f.first_name || "do'st");
+  const opts = {
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: [[{ text: "Ochish", web_app: { url: WEBAPP_URL } }]] },
+  };
+  try {
+    await bot.sendMessage(msg.chat.id, startText(name, true), opts);
+  } catch {
+    // premium emoji ruxsat etilmasa, oddiy emoji bilan yuboriladi
+    await bot.sendMessage(msg.chat.id, startText(name, false), opts).catch(() => {});
+  }
+});
+
+bot.onText(/^\/top/, (msg) => {
+  const top = Object.values(db.users).filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score).slice(0, 10);
+  const medals = ["🥇", "🥈", "🥉"];
+  const lines = top.map((u, i) => `${medals[i] || `<b>${i + 1}.</b>`} ${esc(u.name)} — <b>${fmt(u.score)}</b>`);
+  bot.sendMessage(msg.chat.id,
+    `🏆 <b>Shadow Royale reytingi</b>\n\n` + (lines.join("\n") || "Hali hech kim bosmadi. Birinchi bo'ling!"),
+    { parse_mode: "HTML", reply_markup: { inline_keyboard: [[{ text: "👑 O'ynash", web_app: { url: WEBAPP_URL } }]] } });
 });
 
 bot.on("pre_checkout_query", (q) => bot.answerPreCheckoutQuery(q.id, true));
